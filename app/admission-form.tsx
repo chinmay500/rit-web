@@ -1,3 +1,5 @@
+'use client'
+
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -16,7 +18,7 @@ const submitAdmissionForm = async (data: FormData): Promise<void> => {
   console.log("Form data submitted:", data);
 };
 
-const AdmissionForm = ({ onSubmitSuccess }: { onSubmitSuccess?: () => void }) => {
+export function AdmissionForm({ onSubmitSuccess }: { onSubmitSuccess?: () => void }) {
   const {
     register,
     handleSubmit,
@@ -84,7 +86,5 @@ const AdmissionForm = ({ onSubmitSuccess }: { onSubmitSuccess?: () => void }) =>
       </button>
     </form>
   );
-};
-
-export default AdmissionForm;
+}
 
