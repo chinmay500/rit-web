@@ -1,13 +1,12 @@
 import Image from 'next/image'
-// import { SiteHeader } from "@/components/site-header"
+import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { AchievementSlideshow } from "@/components/achievement-slideshow"
-import { AdmissionForm } from './admission-form'
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      
+      <SiteHeader />
       <main className="flex-1">
         <section className="relative">
           {/* Background image */}
@@ -33,11 +32,9 @@ export default function Home() {
           </div>
         </section>
 
-        
-
         {/* About Institute Section */}
         <section className="py-16 bg-white">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">About Our Institute</h2>
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
@@ -60,15 +57,15 @@ export default function Home() {
 
         {/* Student Achievements Section */}
         <section className="py-16 bg-gray-100">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">Student Achievements</h2>
             <AchievementSlideshow />
           </div>
         </section>
 
         {/* Importance of Technical Institution Section */}
-        <section className="py-16 bg-primary text-white">
-          <div className="container">
+        <section className="py-16 bg-blue-600 text-white">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">Importance of Technical Education</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div>
@@ -86,10 +83,10 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
+
         {/* Our Recruiters Section */}
         <section className="py-16 bg-white">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">Our Recruiters</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -114,7 +111,7 @@ export default function Home() {
 
         {/* Our Tie-up Section */}
         <section className="py-16 bg-gray-100">
-          <div className="container">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">We are Tie-Up With</h2>
             <div className="flex flex-wrap justify-center items-center gap-8">
               {[
