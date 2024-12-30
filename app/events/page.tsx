@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { EventsList } from "@/components/events-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -83,7 +82,7 @@ export const pastEvents: Event[] = [
 export default function EventsPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
+   
       <main className="flex-1">
         <section className="py-12 md:py-16 lg:py-20">
           <div className="container">

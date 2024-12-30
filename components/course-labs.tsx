@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
@@ -19,7 +18,6 @@ interface CourseLabsProps {
 export function CourseLabs({ departmentName, courseName, courseCode, labs }: CourseLabsProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
       <main className="flex-grow container mx-auto px-4 py-8">
         <Link href={`/departments/${departmentName.toLowerCase()}/courses/${courseCode}`} passHref>
           <Button variant="outline" className="mb-4">

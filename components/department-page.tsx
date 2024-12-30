@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { SiteHeader } from "@/components/site-header"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface Course {
@@ -35,7 +34,6 @@ export function DepartmentPage({
 }: DepartmentPageProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
       <main className="flex-grow">
         <div className="relative">
           <Image

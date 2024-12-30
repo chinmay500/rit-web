@@ -1,12 +1,11 @@
 import Image from 'next/image'
-import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { AchievementSlideshow } from "@/components/achievement-slideshow"
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
+      
       <main className="flex-1">
         <section className="relative">
           {/* Background image */}

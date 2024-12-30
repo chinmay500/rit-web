@@ -83,10 +83,7 @@ export function SiteHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem asChild>
-                <Link href="/upcoming-events" className="w-full">Upcoming Events</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/past-events" className="w-full">Past Events</Link>
+                <Link href="/events" className="w-full"> Events</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

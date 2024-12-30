@@ -3,7 +3,7 @@ import { DepartmentPage } from '@/components/department-page'
 export default function MechanicalDepartment() {
   return (
     <DepartmentPage
-      hodImage="/placeholder.svg?height=300&width=250"
+      hodImage="/as.avif"
       hodName="Mr. Ajinkya A. Satam"
       hodQualifications="M.Tech in Mechanical Engineering"
       departmentName="Mechanical Engineering"
