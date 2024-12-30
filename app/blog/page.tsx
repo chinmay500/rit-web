@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { BlogPostCard } from "@/components/blog-post-card"
 import { blogPosts } from "@/lib/blog-posts"
@@ -6,7 +5,6 @@ import { blogPosts } from "@/lib/blog-posts"
 export default function BlogPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
       <main className="flex-1">
         <section className="py-12">
           <div className="container">

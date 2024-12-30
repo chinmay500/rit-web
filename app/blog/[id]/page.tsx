@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { blogPosts } from "@/lib/blog-posts"
 import Image from "next/image"
@@ -21,7 +20,6 @@ export default function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
       <main className="flex-1">
         <article className="py-12">
           <div className="container max-w-4xl">
