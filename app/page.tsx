@@ -2,7 +2,7 @@ import Image from 'next/image'
 // import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { AchievementSlideshow } from "@/components/achievement-slideshow"
-import { AdmissionForm } from './admission-form'
+// import { AdmissionForm } from './admission-form'
 
 export default function Home() {
   return (
