@@ -12,7 +12,7 @@ import {
 import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
-import { AdmissionForm } from '@/app/admission-form'
+import { ContactForm } from '@/app/Contact-form'
 import { Chatbot } from '@/components/Chatbot'
 
 export function SiteHeader() {
@@ -87,7 +87,7 @@ export function SiteHeader() {
               <Button variant="outline">Contact Us</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
-              <AdmissionForm onSubmitSuccess={() => setOpen(false)} />
+              <ContactForm onSubmitSuccess={() => setOpen(false)} />
             </DialogContent>
           </Dialog>
           <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
@@ -138,14 +138,14 @@ export function SiteHeader() {
                 <Button variant="outline">Contact Us</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
-                <AdmissionForm onSubmitSuccess={() => setOpen(false)} />
+                <ContactForm onSubmitSuccess={() => setOpen(false)} />
               </DialogContent>
             </Dialog>
             <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Chat with RITP
+                  Chat with RITPal
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">

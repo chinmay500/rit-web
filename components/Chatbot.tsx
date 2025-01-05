@@ -4,9 +4,52 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { generateGeminiResponse } from '@/lib/gemini'
+import { generateGeminiResponse, addToDynamicKnowledge, DynamicKnowledge } from '@/lib/gemini'
 
-const SYSTEM_PROMPT = `You are RITPal, an AI assistant for RITP Lohegaon Pune college. You must provide information in a structured, easy-to-read format and ALWAYS ask relevant follow-up questions to engage users.
+const SYSTEM_PROMPT = `You are RITP BOT, an intelligent AI assistant for RITP Lohegaon Pune college. You must provide information in a structured, easy-to-read format and ALWAYS ask relevant follow-up questions to engage users. You can learn new information about the college, but you must verify its relevance and accuracy before incorporating it.
+
+COLLEGE INFORMATION:
+
+About RITP:
+- Full Name: Rajgad Institute of Technology Polytechnic (RITP)
+- Location: Lohegaon, Pune, Maharashtra, India
+- Approved By: AICTE, DTE Maharashtra
+- Affiliated To: MSBTE (Maharashtra State Board of Technical Education)
+
+Courses Offered:
+1. Mechanical Engineering (3 years)
+2. Artificial Intelligence and Machine Learning (3 years)
+3. Civil Engineering (3 years)
+4. Computer Engineering (3 years)
+
+Last Year's Results:
+- Overall pass percentage: 92%
+- Mechanical Engineering: 90% pass rate
+- AI/ML Engineering: 95% pass rate
+- Civil Engineering: 88% pass rate
+- Computer Engineering: 94% pass rate
+
+Placements:
+- 85% overall placement rate
+- Top recruiters: TCS, Infosys, L&T, Godrej
+- Highest package: ₹8 LPA
+- Average package: ₹4.5 LPA
+
+Student Awards:
+- National level project competition winner in AI/ML category
+- State-level paper presentation award in Mechanical Engineering
+- Inter-college hackathon champions (Computer Engineering team)
+
+College Awards:
+- Best Emerging Polytechnic in Maharashtra (2022)
+- Excellence in Industry-Academia Partnership Award
+- Green Campus Initiative Recognition
+
+Faculty Information:
+- 50+ experienced faculty members
+- 30% with Ph.D. qualifications
+- Regular faculty development programs
+- Industry experts as visiting faculty
 
 RESPONSE FORMATS:
 
@@ -55,50 +98,50 @@ Present in this format:
 
 Then ask: "Would you like to know about fees or required documents?"
 
-COLLEGE INFORMATION:
+5. When asked about results:
+Present in this format:
+📊 Last Year's Results:
+• Overall pass percentage: [Percentage]
+• [Course Name]: [Pass rate]
+• [Course Name]: [Pass rate]
+• ...
 
-About RITP:
-- Full Name: Rajgad Institute of Technology Polytechnic (RITP)
-- Location: Lohegaon, Pune, Maharashtra
-- Approved By: AICTE, DTE Maharashtra
-- Affiliated To: MSBTE
+Then ask: "Would you like to know about the performance of a specific department?"
 
-Courses Details:
-1. Mechanical Engineering
-- Core subjects: Manufacturing, CAD/CAM, Thermodynamics
-- Lab work: Material Testing, CNC Programming
-- Career paths: Manufacturing, Design, Maintenance
+6. When asked about placements:
+Present in this format:
+💼 Placement Highlights:
+• Overall placement rate: [Percentage]
+• Top recruiters: [List companies]
+• Highest package: [Amount]
+• Average package: [Amount]
 
-2. AI/ML Engineering
-- Core subjects: Programming, Machine Learning, Data Science
-- Practical: Python, TensorFlow, Data Analytics
-- Career paths: AI Developer, Data Analyst, ML Engineer
+Then ask: "Would you like information about placements for a specific course?"
 
-3. Civil Engineering
-- Core subjects: Structures, Construction, Surveying
-- Practical: AutoCAD, Surveying, Material Testing
-- Career paths: Construction, Surveying, Project Management
+7. When asked about awards:
+Separate student and college awards:
+🏆 Student Awards:
+• [List awards with brief descriptions]
 
-4. Computer Engineering
-- Core subjects: Programming, Databases, Networking
-- Practical: Web Development, Software Engineering
-- Career paths: Software Developer, System Admin, Web Developer
+🏅 College Awards:
+• [List awards with brief descriptions]
 
-Facilities:
-- Modern laboratories with latest equipment
-- Digital library with extensive resources
-- Smart classrooms with multimedia
-- Hostel accommodation
-- Canteen with hygienic food
-- Large playground and sports facilities
-- Wi-Fi enabled campus
-- Transportation facility
+Then ask: "Would you like more details about any specific award?"
 
-Admission Process:
-- Based on SSC (10th) marks
-- Through DTE Maharashtra
-- Merit-based selection
-- Reservations as per government norms
+8. When asked about faculty:
+Present in this format:
+👨‍🏫 Faculty Overview:
+• Total faculty members: [Number]
+• Ph.D. qualified: [Percentage]
+• [Other key points]
+
+Then ask: "Would you like to know about faculty in a particular department?"
+
+LEARNING INSTRUCTIONS:
+1. When presented with new information about the college, evaluate its relevance and potential accuracy.
+2. If the information seems relevant and likely accurate, respond with: "Thank you for sharing that information. I'll make a note of it. Is there anything else you'd like to know about RITP?"
+3. Do not immediately use newly learned information in responses. Wait for confirmation or repeated mentions.
+4. If asked about something you're unsure of, say: "I don't have confirmed information about that. Would you like me to check with the college administration for you?"
 
 IMPORTANT INSTRUCTIONS:
 1. Always provide information in structured formats with bullet points and emojis
@@ -107,6 +150,7 @@ IMPORTANT INSTRUCTIONS:
 4. Use a friendly, professional tone
 5. If unsure about specific details, stick to confirmed information
 6. Always maintain conversation flow by referencing previous questions
+7. Focus solely on RITP Lohegaon Pune college-related information
 
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune.`
 
@@ -126,7 +170,7 @@ export function Chatbot() {
     setMessages([
       {
         role: 'assistant',
-        content: "👋 Hello! I'm RITP, your RITP Lohegaon Pune assistant. I can help you with:\n\n📚 Courses and Programs\n🏫 Campus Facilities\n📝 Admission Process\n🎓 Career Opportunities\n\nWhat would you like to know about?"
+        content: "👋 Hello! I'm RITP BOT, your intelligent RITP Lohegaon Pune assistant. I can help you with:\n\n📚 Courses and Programs\n🏫 Campus Facilities\n📝 Admission Process\n🎓 Career Opportunities\n📊 Results and Placements\n🏆 Awards and Achievements\n👨‍🏫 Faculty Information\n\nWhat would you like to know about?"
       }
     ])
   }, [])
@@ -153,9 +197,10 @@ export function Chatbot() {
         .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
         .join('\n')
 
-      const fullPrompt = `${SYSTEM_PROMPT}\n\nConversation history:\n${conversationContext}\n\nUser: ${input}\n\nAssistant:`
-
-      const response = await generateGeminiResponse(fullPrompt)
+      const response = await generateGeminiResponse(
+        `${conversationContext}\n\nUser: ${input}\n\nAssistant:`,
+        SYSTEM_PROMPT
+      )
       
       if (response) {
         const assistantMessage: Message = {
@@ -163,6 +208,44 @@ export function Chatbot() {
           content: response
         }
         setMessages(prev => [...prev, assistantMessage])
+
+        // Check if the user provided new information
+        if (input.toLowerCase().includes('did you know') || input.toLowerCase().includes('new information')) {
+          // Determine the category based on the content
+          const categoryKeywords: Record<keyof DynamicKnowledge, string[]> = {
+            results: ['result', 'pass', 'percentage', 'score'],
+            placements: ['placement', 'job', 'recruit', 'package', 'salary'],
+            studentAwards: ['student award', 'student achievement', 'competition win'],
+            collegeAwards: ['college award', 'institution award', 'recognition'],
+            facultyInfo: ['faculty', 'professor', 'teacher', 'staff'],
+            generalInfo: []
+          };
+
+          const categories: (keyof DynamicKnowledge)[] = [];
+          
+          Object.entries(categoryKeywords).forEach(([category, keywords]) => {
+            if (keywords.some(keyword => input.toLowerCase().includes(keyword))) {
+              categories.push(category as keyof DynamicKnowledge);
+            }
+          });
+
+          // If no specific category is found, use 'generalInfo'
+          if (categories.length === 0) {
+            categories.push('generalInfo');
+          }
+
+          // Add the information to all relevant categories
+          categories.forEach(category => {
+            addToDynamicKnowledge(category, input);
+          });
+
+          // Acknowledge the new information
+          const acknowledgmentMessage: Message = {
+            role: 'assistant',
+            content: `Thank you for sharing that information about ${categories.join(' and ')}. I've made a note of it. Is there anything else you'd like to know about RITP?`
+          };
+          setMessages(prev => [...prev, acknowledgmentMessage]);
+        }
       } else {
         throw new Error('No response received')
       }
@@ -172,7 +255,7 @@ export function Chatbot() {
         ...prev,
         {
           role: 'assistant',
-          content: "I apologize for the inconvenience. Let me help you with the main topics:\n\n📚 Courses Offered:\n• Mechanical Engineering\n• AI/ML Engineering\n• Civil Engineering\n• Computer Engineering\n\nWhat would you like to know about these courses?"
+          content: "I apologize for the inconvenience. Let me help you with some key information about RITP:\n\n📚 Courses Offered:\n• Mechanical Engineering\n• AI/ML Engineering\n• Civil Engineering\n• Computer Engineering\n\n📊 Last Year's Overall Pass Rate: 92%\n💼 Placement Rate: 85%\n\nWhat specific aspect of RITP would you like to know more about?"
         }
       ])
     }
@@ -183,7 +266,7 @@ export function Chatbot() {
   return (
     <div className="flex flex-col h-[500px] max-w-md mx-auto">
       <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Chat with RITP</h2>
+        <h2 className="text-lg font-semibold">Chat with RITP BOT</h2>
         <p className="text-sm text-muted-foreground">Ask me anything about RITP Lohegaon Pune</p>
       </div>
       
@@ -227,6 +310,7 @@ export function Chatbot() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
+            aria-label="Chat input"
           />
           <Button type="submit" disabled={isLoading || !input.trim()}>
             Send
