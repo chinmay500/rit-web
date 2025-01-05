@@ -49,12 +49,12 @@ export const upcomingEvents: Event[] = [
 export const pastEvents: Event[] = [
   {
     id: "4",
-    title: "Robotics Workshop",
-    date: "2023-12-10",
+    title: "RIT students in Dipex",
+    date: "2024-03-07",
     time: "10:00 AM",
-    venue: "Robotics Lab",
-    description: "Hands-on workshop on building and programming robots.",
-    image: "/events/robotics-workshop.jpg",
+    venue: "Mumbai",
+    description: "AIML students participated in Dipex 2024 at Mumbai.",
+    image: "/ev1.jpeg",
     gallery: ["/events/robot1.jpeg", "/events/robot2.jpeg", "/events/robot3.jpeg"]
   },
   {
