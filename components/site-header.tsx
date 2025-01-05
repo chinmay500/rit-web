@@ -21,7 +21,7 @@ export function SiteHeader() {
   const [chatbotOpen, setChatbotOpen] = useState(false)
 
   const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary">
+    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2">
       {children}
     </Link>
   )
@@ -29,7 +29,7 @@ export function SiteHeader() {
   const NavDropdown = ({ title, items }: { title: string; items: { href: string; label: string }[] }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 px-3">
+        <Button variant="ghost" className="h-9 px-3 py-2 text-sm font-medium">
           {title}
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
@@ -37,7 +37,7 @@ export function SiteHeader() {
       <DropdownMenuContent align="start" className="w-56">
         {items.map((item, index) => (
           <DropdownMenuItem key={index} asChild>
-            <Link href={item.href} className="w-full">{item.label}</Link>
+            <Link href={item.href} className="w-full px-3 py-2">{item.label}</Link>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -46,20 +46,20 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex h-16 items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
           <Image
             src="/logorit.png"
             alt="RITP Logo"
-            width={45}
-            height={45}
-            className="h-11 w-11"
+            width={40}
+            height={40}
+            className="h-10 w-10"
             priority
           />
-          <span className="text-xl font-bold">RITP</span>
+          <span className="text-lg font-bold">RITP</span>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
           <NavItem href="/">HOME</NavItem>
           <NavItem href="/about-us">ABOUT US</NavItem>
           
@@ -82,39 +82,42 @@ export function SiteHeader() {
           
           <NavItem href="/blog">BLOG</NavItem>
           
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">Contact Us</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <ContactForm onSubmitSuccess={() => setOpen(false)} />
-            </DialogContent>
-          </Dialog>
-          <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Chat with RITPal
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <Chatbot />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center space-x-4">
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">Contact Us</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <ContactForm onSubmitSuccess={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
+            <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Chat with RITP BOT
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <Chatbot />
+              </DialogContent>
+            </Dialog>
+          </div>
         </nav>
 
         <Button
           variant="ghost"
+          size="sm"
           className="md:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          {mobileMenuOpen ? <X /> : <Menu />}
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden">
-          <nav className="flex flex-col items-center gap-4 py-4">
+        <div className="absolute top-16 left-0 right-0 bg-background border-b md:hidden">
+          <nav className="flex flex-col items-center gap-2 py-4">
             <NavItem href="/">HOME</NavItem>
             <NavItem href="/about-us">ABOUT US</NavItem>
             <NavDropdown 
@@ -133,25 +136,27 @@ export function SiteHeader() {
               ]} 
             />
             <NavItem href="/blog">BLOG</NavItem>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">Contact Us</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <ContactForm onSubmitSuccess={() => setOpen(false)} />
-              </DialogContent>
-            </Dialog>
-            <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Chat with RITP BOT
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <Chatbot />
-              </DialogContent>
-            </Dialog>
+            <div className="flex flex-col items-center gap-2 mt-2">
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">Contact Us</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <ContactForm onSubmitSuccess={() => setOpen(false)} />
+                </DialogContent>
+              </Dialog>
+              <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Chat with RITP BOT
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <Chatbot />
+                </DialogContent>
+              </Dialog>
+            </div>
           </nav>
         </div>
       )}
