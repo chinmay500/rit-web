@@ -7,8 +7,11 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "College Website",
+  title: "RITP",
   description: "Welcome to our college website",
+  icons: {
+    icon: '/fav.ico',
+  },
 }
 
 export default function RootLayout({
