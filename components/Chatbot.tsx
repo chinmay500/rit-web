@@ -11,7 +11,7 @@ const SYSTEM_PROMPT = `You are RITP BOT, an intelligent AI assistant for RITP Lo
 COLLEGE INFORMATION:
 
 About RITP:
-- Full Name: Rajgad Institute of Technology Polytechnic (RITP)
+- Full Name: Rajarambapu Institute of Technology Polytechnic (RITP)
 - Location: Lohegaon, Pune, Maharashtra, India
 - Approved By: AICTE, DTE Maharashtra
 - Affiliated To: MSBTE (Maharashtra State Board of Technical Education)
