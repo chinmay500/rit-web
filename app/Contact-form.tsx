@@ -64,7 +64,7 @@ export function ContactForm({ onSubmitSuccess }: { onSubmitSuccess?: () => void 
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Contact Us</h2>
         <p className="text-sm text-muted-foreground">
-          Fill out the form below and we'll get back to you as soon as possible.
+          Fill out the form below and we&apos;ll get back to you as soon as possible.
         </p>
       </div>
 
