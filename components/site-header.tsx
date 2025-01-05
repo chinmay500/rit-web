@@ -145,7 +145,7 @@ export function SiteHeader() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Chat with RITPal
+                  Chat with RITP BOT
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
