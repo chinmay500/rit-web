@@ -1,13 +1,30 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { generateGeminiResponse, addToDynamicKnowledge, DynamicKnowledge } from '@/lib/gemini'
+import { Card } from "@/components/ui/card"
+import { Avatar } from "@/components/ui/avatar"
+import { generateGeminiResponse} from '@/lib/gemini'
+import { Bot, User, X, Maximize2, RotateCcw } from 'lucide-react'
+import { format } from 'date-fns'
 
-const SYSTEM_PROMPT = `You are RITP BOT, an intelligent AI assistant for RITP Lohegaon Pune college. You must provide information in a structured, easy-to-read format and ALWAYS ask relevant follow-up questions to engage users. You can learn new information about the college, but you must verify its relevance and accuracy before incorporating it.
+const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
+
+RESPONSE GUIDELINES:
+1. Use natural language and vary your responses to sound more human-like.
+2. Show empathy and enthusiasm in your responses.
+3. Use conversational phrases like "Well," "You know," "Actually," to start sentences occasionally.
+4. Ask follow-up questions to engage the user and gather more context.
+5. If appropriate, share anecdotes or fun facts about college life at RITP.
+6. Use emojis sparingly to convey emotion, but don't overdo it.
+
+GREETING VARIATIONS:
+- "Hey there! 👋 I'm RITP BOT, your friendly RITP Lohegaon guide. What can I help you with today?"
+- "Welcome to RITP Lohegaon! I'm your AI assistant, ready to answer any questions you might have."
+- "Greetings! 😊 I'm RITP BOT, here to help you navigate all things RITP Lohegaon. What would you like to know?"
 COLLEGE INFORMATION:
 
 About RITP:
@@ -154,9 +171,11 @@ IMPORTANT INSTRUCTIONS:
 
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune.`
 
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  timestamp: Date
 }
 
 export function Chatbot() {
@@ -164,21 +183,28 @@ export function Chatbot() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const greetings = [
+    "Hi! 👋 I'm RITP BOT, and I'll be your guide to RITP Lohegaon today.",
+    "Hello! Welcome to RITP Lohegaon. I'm your AI assistant, ready to help!",
+    "Greetings! 😊 I'm here to help you learn about RITP Lohegaon. What would you like to know?"
+  ]
 
   useEffect(() => {
-    // Add initial greeting
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)]
     setMessages([
       {
         role: 'assistant',
-        content: "👋 Hello! I'm RITP BOT, your intelligent RITP Lohegaon Pune assistant. I can help you with:\n\n📚 Courses and Programs\n🏫 Campus Facilities\n📝 Admission Process\n🎓 Career Opportunities\n📊 Results and Placements\n🏆 Awards and Achievements\n👨‍🏫 Faculty Information\n\nWhat would you like to know about?"
+        content: randomGreeting,
+        timestamp: new Date()
       }
     ])
   }, [])
 
-  useEffect(() => {
-    // Scroll to bottom when new messages arrive
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+  useLayoutEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages])
 
@@ -186,13 +212,16 @@ export function Chatbot() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    const userMessage: Message = { role: 'user', content: input }
+    const userMessage: Message = { 
+      role: 'user', 
+      content: input,
+      timestamp: new Date()
+    }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
 
     try {
-      // Construct conversation context
       const conversationContext = messages
         .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
         .join('\n')
@@ -205,47 +234,10 @@ export function Chatbot() {
       if (response) {
         const assistantMessage: Message = {
           role: 'assistant',
-          content: response
+          content: response,
+          timestamp: new Date()
         }
         setMessages(prev => [...prev, assistantMessage])
-
-        // Check if the user provided new information
-        if (input.toLowerCase().includes('did you know') || input.toLowerCase().includes('new information')) {
-          // Determine the category based on the content
-          const categoryKeywords: Record<keyof DynamicKnowledge, string[]> = {
-            results: ['result', 'pass', 'percentage', 'score'],
-            placements: ['placement', 'job', 'recruit', 'package', 'salary'],
-            studentAwards: ['student award', 'student achievement', 'competition win'],
-            collegeAwards: ['college award', 'institution award', 'recognition'],
-            facultyInfo: ['faculty', 'professor', 'teacher', 'staff'],
-            generalInfo: []
-          };
-
-          const categories: (keyof DynamicKnowledge)[] = [];
-          
-          Object.entries(categoryKeywords).forEach(([category, keywords]) => {
-            if (keywords.some(keyword => input.toLowerCase().includes(keyword))) {
-              categories.push(category as keyof DynamicKnowledge);
-            }
-          });
-
-          // If no specific category is found, use 'generalInfo'
-          if (categories.length === 0) {
-            categories.push('generalInfo');
-          }
-
-          // Add the information to all relevant categories
-          categories.forEach(category => {
-            addToDynamicKnowledge(category, input);
-          });
-
-          // Acknowledge the new information
-          const acknowledgmentMessage: Message = {
-            role: 'assistant',
-            content: `Thank you for sharing that information about ${categories.join(' and ')}. I've made a note of it. Is there anything else you'd like to know about RITP?`
-          };
-          setMessages(prev => [...prev, acknowledgmentMessage]);
-        }
       } else {
         throw new Error('No response received')
       }
@@ -255,7 +247,8 @@ export function Chatbot() {
         ...prev,
         {
           role: 'assistant',
-          content: "I apologize for the inconvenience. Let me help you with some key information about RITP:\n\n📚 Courses Offered:\n• Mechanical Engineering\n• AI/ML Engineering\n• Civil Engineering\n• Computer Engineering\n\n📊 Last Year's Overall Pass Rate: 92%\n💼 Placement Rate: 85%\n\nWhat specific aspect of RITP would you like to know more about?"
+          content: "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
+          timestamp: new Date()
         }
       ])
     }
@@ -263,61 +256,115 @@ export function Chatbot() {
     setIsLoading(false)
   }
 
+  const formatMessageDate = (date: Date) => {
+    return format(date, 'h:mm a')
+  }
+
+  const formatDateDivider = (date: Date) => {
+    return format(date, 'MMMM d, yyyy')
+  }
+
   return (
-    <div className="flex flex-col h-[500px] max-w-md mx-auto">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Chat with RITP BOT</h2>
-        <p className="text-sm text-muted-foreground">Ask me anything about RITP Lohegaon Pune</p>
+    <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg">
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8 bg-primary">
+            <Bot className="h-4 w-4 text-primary-foreground" />
+          </Avatar>
+          <div className="font-semibold">RITP BOT</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-      
-      <ScrollArea className="flex-grow p-4 whitespace-pre-wrap" ref={scrollAreaRef}>
-        <div className="space-y-4">
+
+      <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
+        <div className="py-4 space-y-6">
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
+              {formatDateDivider(new Date())}
+            </div>
+          </div>
           {messages.map((message, index) => (
             <div
               key={index}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
-                }`}
-              >
-                {message.content}
+              <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
+                  {message.role === 'user' ? (
+                    <User className="h-4 w-4 text-primary-foreground" />
+                  ) : (
+                    <Bot className="h-4 w-4 text-secondary-foreground" />
+                  )}
+                </Avatar>
+                <div className="space-y-1">
+                  <div
+                    className={`rounded-2xl px-4 py-2 ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                        : 'bg-muted text-foreground rounded-tl-none'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                  <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {formatMessageDate(message.timestamp)}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                  <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+              <div className="flex items-start gap-3 max-w-[80%]">
+                <Avatar className="h-8 w-8 bg-secondary">
+                  <Bot className="h-4 w-4 text-secondary-foreground" />
+                </Avatar>
+                <div className="space-y-1">
+                  <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex gap-2">
+      <div className="p-4 border-t">
+        <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             type="text"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
+            className="flex-grow rounded-full"
             aria-label="Chat input"
           />
-          <Button type="submit" disabled={isLoading || !input.trim()}>
+          <Button 
+            type="submit" 
+            disabled={isLoading || !input.trim()}
+            className="rounded-full px-6"
+          >
             Send
           </Button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </Card>
   )
 }
-
