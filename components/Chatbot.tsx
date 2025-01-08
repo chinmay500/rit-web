@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
-import { Avatar } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse} from '@/lib/gemini'
-import { Bot, User, X, Maximize2, RotateCcw } from 'lucide-react'
+import { RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -172,23 +173,105 @@ IMPORTANT INSTRUCTIONS:
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune.`
 
 
+
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
 }
 
+interface Option {
+  label: string
+  value: string
+}
+
+const BotAvatar = () => (
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+  </svg>
+)
+
+const UserAvatar = () => (
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+  </svg>
+)
+
+const questionKeywords = [
+  'cutoff', 'admission', 'department', 'course', 'fee', 'placement',
+  'faculty', 'infrastructure', 'hostel', 'scholarship', 'exam', 'events'
+]
+
+const splitQuestions = (input: string): string[] => {
+  const sentences = input.split(/[.!?]+/).filter(Boolean).map(s => s.trim())
+  return sentences.filter(sentence => 
+    questionKeywords.some(keyword => sentence.toLowerCase().includes(keyword))
+  )
+}
+
+const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
+  const options: Option[] = []
+  const lowercaseInput = userInput.toLowerCase()
+  const lowercaseResponse = botResponse.toLowerCase()
+
+  const allOptions = [
+    { label: 'Course Details', value: 'Tell me more about the courses offered' },
+    { label: 'Admission Process', value: 'What is the admission process?' },
+    { label: 'Placement Statistics', value: 'What are the placement statistics?' },
+    { label: 'Faculty Information', value: 'Tell me about the faculty' },
+    { label: 'College Events', value: 'What are the upcoming college events?' },
+    { label: 'Infrastructure', value: 'Describe the college infrastructure' },
+    { label: 'Scholarships', value: 'Are there any scholarships available?' },
+    { label: 'Extracurricular Activities', value: 'What extracurricular activities are offered?' },
+    { label: 'Research Opportunities', value: 'Are there research opportunities for students?' },
+    { label: 'Industry Partnerships', value: 'Does the college have any industry partnerships?' }
+  ]
+
+  // Filter out already asked questions
+  const availableOptions = allOptions.filter(option => !askedQuestions.has(option.value))
+
+  // Always include at least one related option if available
+  const relatedOption = availableOptions.find(option => 
+    lowercaseInput.includes(option.label.toLowerCase()) && 
+    !lowercaseResponse.includes(option.label.toLowerCase())
+  )
+
+  if (relatedOption) {
+    options.push(relatedOption)
+  }
+
+  // Add random options to make up to 3 total options
+  while (options.length < 3 && availableOptions.length > options.length) {
+    const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)]
+    if (!options.includes(randomOption)) {
+      options.push(randomOption)
+    }
+  }
+
+  return options
+}
+
 export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [options, setOptions] = useState<Option[]>([])
+  const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const greetings = [
     "Hi! 👋 I'm RITP BOT, and I'll be your guide to RITP Lohegaon today.",
     "Hello! Welcome to RITP Lohegaon. I'm your AI assistant, ready to help!",
-    "Greetings! 😊 I'm here to help you learn about RITP Lohegaon. What would you like to know?"
+    "Greetings! 😊 I'm here to help you learn about RITP Lohegaon. What would you like to know?",
+    "Welcome to RITP Lohegaon! 🎓 I'm your virtual assistant, eager to answer your questions.",
+    "Hey there! Ready to explore RITP Lohegaon? I'm here to guide you through everything you need to know.",
+    "Good day! 🌟 I'm RITP BOT, your personal guide to all things RITP Lohegaon. What can I help you with?",
+    "Hello and welcome to RITP Lohegaon! I'm your AI companion, ready to assist with any inquiries you might have."
   ]
 
   useEffect(() => {
@@ -196,10 +279,21 @@ export function Chatbot() {
     setMessages([
       {
         role: 'assistant',
-        content: randomGreeting,
+        content: `${randomGreeting} Feel free to ask me multiple questions at once - I can handle it!`,
         timestamp: new Date()
       }
     ])
+
+    const handleResize = () => {
+      const isKeyboard = window.innerHeight < window.outerHeight
+      setIsKeyboardVisible(isKeyboard)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   useLayoutEffect(() => {
@@ -208,13 +302,18 @@ export function Chatbot() {
     }
   }, [messages])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
+  useEffect(() => {
+    if (isKeyboardVisible && inputRef.current) {
+      inputRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [isKeyboardVisible])
+
+  const processUserInput = async (userInput: string) => {
+    if (isLoading) return
 
     const userMessage: Message = { 
       role: 'user', 
-      content: input,
+      content: userInput,
       timestamp: new Date()
     }
     setMessages(prev => [...prev, userMessage])
@@ -222,14 +321,24 @@ export function Chatbot() {
     setIsLoading(true)
 
     try {
-      const conversationContext = messages
-        .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-        .join('\n')
+      const questions = splitQuestions(userInput)
+      let response: string
 
-      const response = await generateGeminiResponse(
-        `${conversationContext}\n\nUser: ${input}\n\nAssistant:`,
-        SYSTEM_PROMPT
-      )
+      if (questions.length > 1) {
+        response = await generateGeminiResponse(
+          `User has asked multiple questions: ${questions.join(', ')}. Please provide a structured response addressing each question separately.`,
+          SYSTEM_PROMPT
+        )
+      } else {
+        const conversationContext = messages
+          .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+          .join('\n')
+
+        response = await generateGeminiResponse(
+          `${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`,
+          SYSTEM_PROMPT
+        )
+      }
       
       if (response) {
         const assistantMessage: Message = {
@@ -238,6 +347,7 @@ export function Chatbot() {
           timestamp: new Date()
         }
         setMessages(prev => [...prev, assistantMessage])
+        setOptions(generateOptions(userInput, response, askedQuestions))
       } else {
         throw new Error('No response received')
       }
@@ -256,6 +366,17 @@ export function Chatbot() {
     setIsLoading(false)
   }
 
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim()) return
+    processUserInput(input)
+  }, [input])
+
+  const handleOptionClick = useCallback((option: Option) => {
+    setAskedQuestions(prev => new Set(prev).add(option.value))
+    processUserInput(option.value)
+  }, [])
+
   const formatMessageDate = (date: Date) => {
     return format(date, 'h:mm a')
   }
@@ -264,107 +385,156 @@ export function Chatbot() {
     return format(date, 'MMMM d, yyyy')
   }
 
-  return (
-    <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg">
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 bg-primary">
-            <Bot className="h-4 w-4 text-primary-foreground" />
-          </Avatar>
-          <div className="font-semibold">RITP BOT</div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Maximize2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+  const handleRefresh = () => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: greetings[Math.floor(Math.random() * greetings.length)],
+        timestamp: new Date()
+      }
+    ])
+    setInput('')
+    setIsLoading(false)
+    setOptions([])
+    setAskedQuestions(new Set())
+  }
 
-      <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
-        <div className="py-4 space-y-6">
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
-              {formatDateDivider(new Date())}
-            </div>
-          </div>
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
-                  {message.role === 'user' ? (
-                    <User className="h-4 w-4 text-primary-foreground" />
-                  ) : (
-                    <Bot className="h-4 w-4 text-secondary-foreground" />
-                  )}
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+  }, []);
+
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8 bg-primary-foreground">
+                  <AvatarFallback>
+                    <BotAvatar />
+                  </AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
-                  <div
-                    className={`rounded-2xl px-4 py-2 ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-tr-none'
-                        : 'bg-muted text-foreground rounded-tl-none'
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                  <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                    {formatMessageDate(message.timestamp)}
-                  </div>
-                </div>
+                <div className="font-semibold">RITP BOT</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleRefresh}>
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleClose}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex items-start gap-3 max-w-[80%]">
-                <Avatar className="h-8 w-8 bg-secondary">
-                  <Bot className="h-4 w-4 text-secondary-foreground" />
-                </Avatar>
-                <div className="space-y-1">
-                  <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+
+            <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
+              <div className="py-4 space-y-6">
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
+                    {formatDateDivider(new Date())}
+                  </div>
+                </div>
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
+                        <AvatarFallback>
+                          {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div
+                          className={`rounded-2xl px-4 py-2 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground rounded-tr-none'
+                              : 'bg-muted text-foreground rounded-tl-none'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                        <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                          {formatMessageDate(message.timestamp)}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
+                {options.length > 0 && (
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {options.map((option, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOptionClick(option)}
+                        disabled={isLoading}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start gap-3 max-w-[80%]">
+                      <Avatar className="h-8 w-8 bg-secondary">
+                        <AvatarFallback>
+                          <BotAvatar />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
+                          <div className="flex space-x-2">
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
+            </ScrollArea>
 
-      <div className="p-4 border-t">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading}
-            className="flex-grow rounded-full"
-            aria-label="Chat input"
-          />
-          <Button 
-            type="submit" 
-            disabled={isLoading || !input.trim()}
-            className="rounded-full px-6"
-          >
-            Send
-          </Button>
-        </form>
-      </div>
-    </Card>
+            <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''}`}>
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Type your message..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={isLoading}
+                  className="flex-grow rounded-full"
+                  aria-label="Chat input"
+                  ref={inputRef}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || !input.trim()}
+                  className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send
+                </Button>
+              </form>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
+
