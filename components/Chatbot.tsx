@@ -6,10 +6,13 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from '@/lib/gemini'
-import {  RotateCcw, Send, X } from 'lucide-react'
+import { RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image'
+
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -193,11 +196,11 @@ interface ChatbotProps {
 }
 
 const BotAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-bot"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
 )
 
 const UserAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
 )
 
 const questionKeywords = [
@@ -231,8 +234,8 @@ const generateOptions = (userInput: string, botResponse: string): Option[] => {
   ];
 
   // Always include at least one related option if available
-  const relatedOption = allOptions.find(option => 
-    lowercaseInput.includes(option.label.toLowerCase()) && 
+  const relatedOption = availableOptions.find(option =>
+    lowercaseInput.includes(option.label.toLowerCase()) &&
     !lowercaseResponse.includes(option.label.toLowerCase())
   );
 
@@ -380,75 +383,74 @@ export function Chatbot({ onClose }: ChatbotProps) {
 
 
   return (
-    <Card className="w-full max-w-2xl h-[600px] flex flex-col overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-2 border-b">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8 bg-primary/10">
-            <AvatarImage src="/logorit.png" alt="RITP Logo" />
-            <AvatarFallback className="bg-primary/10 text-primary">RT</AvatarFallback>
-          </Avatar>
-          <span className="font-semibold">RITP BOT</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleRefresh} className="text-muted-foreground">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-          {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </header>
-
-
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
-          <div className="py-4 space-y-6">
-            <div className="text-center">
-              <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted/50">
-                {formatDateDivider(new Date())}
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8 bg-primary-foreground">
+                  <div>
+                    <Image
+                      src="/logorit.png"
+                      height={50}
+                      width={50}
+                      alt='sd' />
+                  </div>
+                </Avatar>
+                <div className="font-semibold">RITP BOT</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleRefresh}>
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleClose}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
-            {messages.map((message, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
-              >
-                <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-blue-500' : 'bg-white'}`}>
-                    <AvatarFallback>
-                      {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <motion.div
-                      initial={{ scale: 0.95 }}
-                      animate={{ scale: 1 }}
-                      className={`rounded-2xl px-4 py-2 ${
-                        message.role === 'user'
-                          ? 'bg-blue-500 text-white rounded-tr-none'
-                          : 'bg-white text-black rounded-tl-none'
-                      }`}
-                    >
-                      {message.content}
-                    </motion.div>
-                    <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      {formatMessageDate(message.timestamp)}
-                    </div>
+            <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
+              <div className="py-4 space-y-6">
+                <div className="text-center">
+                  <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
+                    {formatDateDivider(new Date())}
                   </div>
                 </div>
-                {message.role === 'assistant' && message.options && message.options.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-wrap gap-2 justify-start mt-2"
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {message.options.map((option, optionIndex) => (
+                    <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
+                        <AvatarFallback>
+                          {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div
+                          className={`rounded-2xl px-4 py-2 ${message.role === 'user'
+                            ? 'bg-primary text-primary-foreground rounded-tr-none'
+                            : 'bg-muted text-foreground rounded-tl-none'
+                            }`}
+                        >
+                          {message.content}
+                        </div>
+                        <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                          {formatMessageDate(message.timestamp)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {options.length > 0 && (
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {options.map((option, index) => (
                       <Button
                         key={optionIndex}
                         variant="outline"
@@ -496,40 +498,32 @@ export function Chatbot({ onClose }: ChatbotProps) {
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-        <div className="p-4 bg-background border-t">
-          <form onSubmit={handleSubmit}>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Ask your question... (Shift + Enter for new line)"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                disabled={isLoading}
-                className="pr-12"
-                aria-label="Chat input"
-                ref={inputRef}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
-                  }
-                }}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || !input.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90"
-              >
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Send</span>
-              </Button>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''}`}>
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Type your message..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  disabled={isLoading}
+                  className="flex-grow rounded-full"
+                  aria-label="Chat input"
+                  ref={inputRef}
+                />
+                <Button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send
+                </Button>
+              </form>
             </div>
           </form>
         </div>
