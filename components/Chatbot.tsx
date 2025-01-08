@@ -7,12 +7,19 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+<<<<<<< HEAD
 import { generateGeminiResponse } from '@/lib/gemini'
 import { RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image'
 
+=======
+import { generateGeminiResponse} from '@/lib/gemini'
+import { RotateCcw, Send, X } from 'lucide-react'
+import { format } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion';
+>>>>>>> bd39a17 (bot changes and ui changes)
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -178,7 +185,10 @@ Remember to be engaging and informative while providing accurate information abo
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bd39a17 (bot changes and ui changes)
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -191,6 +201,7 @@ interface Option {
   value: string
 }
 
+<<<<<<< HEAD
 interface ChatbotProps {
   onClose?: () => void
 }
@@ -201,6 +212,18 @@ const BotAvatar = () => (
 
 const UserAvatar = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+=======
+const BotAvatar = () => (
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+  </svg>
+)
+
+const UserAvatar = () => (
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+  </svg>
+>>>>>>> bd39a17 (bot changes and ui changes)
 )
 
 const questionKeywords = [
@@ -210,11 +233,16 @@ const questionKeywords = [
 
 const splitQuestions = (input: string): string[] => {
   const sentences = input.split(/[.!?]+/).filter(Boolean).map(s => s.trim())
+<<<<<<< HEAD
   return sentences.filter(sentence =>
+=======
+  return sentences.filter(sentence => 
+>>>>>>> bd39a17 (bot changes and ui changes)
     questionKeywords.some(keyword => sentence.toLowerCase().includes(keyword))
   )
 }
 
+<<<<<<< HEAD
 const generateOptions = (userInput: string, botResponse: string): Option[] => {
   const options: Option[] = [];
   const lowercaseInput = userInput.toLowerCase();
@@ -255,9 +283,58 @@ const generateOptions = (userInput: string, botResponse: string): Option[] => {
 };
 
 export function Chatbot({ onClose }: ChatbotProps) {
+=======
+const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
+  const options: Option[] = []
+  const lowercaseInput = userInput.toLowerCase()
+  const lowercaseResponse = botResponse.toLowerCase()
+
+  const allOptions = [
+    { label: 'Course Details', value: 'Tell me more about the courses offered' },
+    { label: 'Admission Process', value: 'What is the admission process?' },
+    { label: 'Placement Statistics', value: 'What are the placement statistics?' },
+    { label: 'Faculty Information', value: 'Tell me about the faculty' },
+    { label: 'College Events', value: 'What are the upcoming college events?' },
+    { label: 'Infrastructure', value: 'Describe the college infrastructure' },
+    { label: 'Scholarships', value: 'Are there any scholarships available?' },
+    { label: 'Extracurricular Activities', value: 'What extracurricular activities are offered?' },
+    { label: 'Research Opportunities', value: 'Are there research opportunities for students?' },
+    { label: 'Industry Partnerships', value: 'Does the college have any industry partnerships?' }
+  ]
+
+  // Filter out already asked questions
+  const availableOptions = allOptions.filter(option => !askedQuestions.has(option.value))
+
+  // Always include at least one related option if available
+  const relatedOption = availableOptions.find(option => 
+    lowercaseInput.includes(option.label.toLowerCase()) && 
+    !lowercaseResponse.includes(option.label.toLowerCase())
+  )
+
+  if (relatedOption) {
+    options.push(relatedOption)
+  }
+
+  // Add random options to make up to 3 total options
+  while (options.length < 3 && availableOptions.length > options.length) {
+    const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)]
+    if (!options.includes(randomOption)) {
+      options.push(randomOption)
+    }
+  }
+
+  return options
+}
+
+export function Chatbot() {
+>>>>>>> bd39a17 (bot changes and ui changes)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [options, setOptions] = useState<Option[]>([])
+  const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -281,6 +358,17 @@ export function Chatbot({ onClose }: ChatbotProps) {
         timestamp: new Date()
       }
     ])
+
+    const handleResize = () => {
+      const isKeyboard = window.innerHeight < window.outerHeight
+      setIsKeyboardVisible(isKeyboard)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   useLayoutEffect(() => {
@@ -289,11 +377,25 @@ export function Chatbot({ onClose }: ChatbotProps) {
     }
   }, [messages])
 
+<<<<<<< HEAD
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
 
     const userMessage: Message = {
       role: 'user',
+=======
+  useEffect(() => {
+    if (isKeyboardVisible && inputRef.current) {
+      inputRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [isKeyboardVisible])
+
+  const processUserInput = async (userInput: string) => {
+    if (isLoading) return
+
+    const userMessage: Message = { 
+      role: 'user', 
+>>>>>>> bd39a17 (bot changes and ui changes)
       content: userInput,
       timestamp: new Date()
     }
@@ -304,6 +406,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
     try {
       const questions = splitQuestions(userInput)
       let response: string
+<<<<<<< HEAD
 
       if (questions.length > 1) {
         response = await generateGeminiResponse(
@@ -321,6 +424,25 @@ export function Chatbot({ onClose }: ChatbotProps) {
         )
       }
 
+=======
+
+      if (questions.length > 1) {
+        response = await generateGeminiResponse(
+          `User has asked multiple questions: ${questions.join(', ')}. Please provide a structured response addressing each question separately.`,
+          SYSTEM_PROMPT
+        )
+      } else {
+        const conversationContext = messages
+          .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+          .join('\n')
+
+        response = await generateGeminiResponse(
+          `${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`,
+          SYSTEM_PROMPT
+        )
+      }
+      
+>>>>>>> bd39a17 (bot changes and ui changes)
       if (response) {
         const newOptions = generateOptions(userInput, response)
         const assistantMessage: Message = {
@@ -330,6 +452,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
           options: newOptions
         }
         setMessages(prev => [...prev, assistantMessage])
+        setOptions(generateOptions(userInput, response, askedQuestions))
       } else {
         throw new Error('No response received')
       }
@@ -356,6 +479,10 @@ export function Chatbot({ onClose }: ChatbotProps) {
   }, [input])
 
   const handleOptionClick = useCallback((option: Option) => {
+<<<<<<< HEAD
+=======
+    setAskedQuestions(prev => new Set(prev).add(option.value))
+>>>>>>> bd39a17 (bot changes and ui changes)
     processUserInput(option.value)
   }, [])
 
@@ -368,6 +495,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
   }
 
   const handleRefresh = () => {
+<<<<<<< HEAD
     if (window.confirm("Are you sure you want to clear the chat? This action cannot be undone.")) {
       setMessages([
         {
@@ -381,6 +509,28 @@ export function Chatbot({ onClose }: ChatbotProps) {
     }
   }
 
+=======
+    setMessages([
+      {
+        role: 'assistant',
+        content: greetings[Math.floor(Math.random() * greetings.length)],
+        timestamp: new Date()
+      }
+    ])
+    setInput('')
+    setIsLoading(false)
+    setOptions([])
+    setAskedQuestions(new Set())
+  }
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+  }, []);
+
+  if (!isVisible) {
+    return null;
+  }
+>>>>>>> bd39a17 (bot changes and ui changes)
 
   return (
     <AnimatePresence>
@@ -394,6 +544,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
             <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 bg-primary-foreground">
+<<<<<<< HEAD
                   <div>
                     <Image
                       src="/logorit.png"
@@ -401,6 +552,11 @@ export function Chatbot({ onClose }: ChatbotProps) {
                       width={50}
                       alt='sd' />
                   </div>
+=======
+                  <AvatarFallback>
+                    <BotAvatar />
+                  </AvatarFallback>
+>>>>>>> bd39a17 (bot changes and ui changes)
                 </Avatar>
                 <div className="font-semibold">RITP BOT</div>
               </div>
@@ -434,10 +590,18 @@ export function Chatbot({ onClose }: ChatbotProps) {
                       </Avatar>
                       <div className="space-y-1">
                         <div
+<<<<<<< HEAD
                           className={`rounded-2xl px-4 py-2 ${message.role === 'user'
                             ? 'bg-primary text-primary-foreground rounded-tr-none'
                             : 'bg-muted text-foreground rounded-tl-none'
                             }`}
+=======
+                          className={`rounded-2xl px-4 py-2 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground rounded-tr-none'
+                              : 'bg-muted text-foreground rounded-tl-none'
+                          }`}
+>>>>>>> bd39a17 (bot changes and ui changes)
                         >
                           {message.content}
                         </div>
@@ -452,16 +616,24 @@ export function Chatbot({ onClose }: ChatbotProps) {
                   <div className="flex flex-wrap gap-2 justify-center">
                     {options.map((option, index) => (
                       <Button
+<<<<<<< HEAD
                         key={optionIndex}
+=======
+                        key={index}
+>>>>>>> bd39a17 (bot changes and ui changes)
                         variant="outline"
                         size="sm"
                         onClick={() => handleOptionClick(option)}
                         disabled={isLoading}
+<<<<<<< HEAD
                         className="hover:bg-primary hover:text-primary-foreground transition-colors bg-background/60"
+=======
+>>>>>>> bd39a17 (bot changes and ui changes)
                       >
                         {option.label}
                       </Button>
                     ))}
+<<<<<<< HEAD
                   </motion.div>
                 )}
               </motion.div>
@@ -503,6 +675,34 @@ export function Chatbot({ onClose }: ChatbotProps) {
               </div>
             </ScrollArea>
 
+=======
+                  </div>
+                )}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start gap-3 max-w-[80%]">
+                      <Avatar className="h-8 w-8 bg-secondary">
+                        <AvatarFallback>
+                          <BotAvatar />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
+                          <div className="flex space-x-2">
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+>>>>>>> bd39a17 (bot changes and ui changes)
             <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''}`}>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <Input
@@ -515,8 +715,13 @@ export function Chatbot({ onClose }: ChatbotProps) {
                   aria-label="Chat input"
                   ref={inputRef}
                 />
+<<<<<<< HEAD
                 <Button
                   type="submit"
+=======
+                <Button 
+                  type="submit" 
+>>>>>>> bd39a17 (bot changes and ui changes)
                   disabled={isLoading || !input.trim()}
                   className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
@@ -525,6 +730,7 @@ export function Chatbot({ onClose }: ChatbotProps) {
                 </Button>
               </form>
             </div>
+<<<<<<< HEAD
           </form>
         </div>
       </main>
@@ -533,3 +739,12 @@ export function Chatbot({ onClose }: ChatbotProps) {
 }
 
 // export default Chatbot;
+=======
+          </Card>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+>>>>>>> bd39a17 (bot changes and ui changes)
