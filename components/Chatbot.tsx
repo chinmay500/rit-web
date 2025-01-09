@@ -4,14 +4,12 @@ import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from '@/lib/gemini'
-import { RotateCcw, Send, X } from 'lucide-react'
+import { GraduationCap, CalendarDays, Building2, Users, RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image'
-
+import { motion, AnimatePresence } from 'framer-motion'
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -177,10 +175,12 @@ Remember to be engaging and informative while providing accurate information abo
 
 
 
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  options?: Option[]
 }
 
 interface Option {
@@ -188,12 +188,16 @@ interface Option {
   value: string
 }
 
+interface ChatbotProps {
+  onClose?: () => void
+}
+
 const BotAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-bot"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
 )
 
 const UserAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
 )
 
 const questionKeywords = [
@@ -208,56 +212,49 @@ const splitQuestions = (input: string): string[] => {
   )
 }
 
-const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
-  const options: Option[] = []
-  const lowercaseInput = userInput.toLowerCase()
-  const lowercaseResponse = botResponse.toLowerCase()
+const generateOptions = (userInput: string, botResponse: string): Option[] => {
+  const options: Option[] = [];
+  const lowercaseInput = userInput.toLowerCase();
+  const lowercaseResponse = botResponse.toLowerCase();
 
   const allOptions = [
-    { label: 'Course Details', value: 'Tell me more about the courses offered' },
-    { label: 'Admission Process', value: 'What is the admission process?' },
-    { label: 'Placement Statistics', value: 'What are the placement statistics?' },
-    { label: 'Faculty Information', value: 'Tell me about the faculty' },
-    { label: 'College Events', value: 'What are the upcoming college events?' },
-    { label: 'Infrastructure', value: 'Describe the college infrastructure' },
-    { label: 'Scholarships', value: 'Are there any scholarships available?' },
-    { label: 'Extracurricular Activities', value: 'What extracurricular activities are offered?' },
-    { label: 'Research Opportunities', value: 'Are there research opportunities for students?' },
-    { label: 'Industry Partnerships', value: 'Does the college have any industry partnerships?' }
-  ]
-
-  // Filter out already asked questions
-  const availableOptions = allOptions.filter(option => !askedQuestions.has(option.value))
+    { label: 'Course Details', value: 'Tell me more about the courses offered at RITP' },
+    { label: 'Admission Process', value: 'What is the admission process for RITP?' },
+    { label: 'Placement Statistics', value: 'What are the placement statistics for RITP?' },
+    { label: 'Faculty Information', value: 'Tell me about the faculty at RITP' },
+    { label: 'College Events', value: 'What are the upcoming events at RITP?' },
+    { label: 'Infrastructure', value: 'Describe the infrastructure at RITP' },
+    { label: 'Scholarships', value: 'Are there any scholarships available at RITP?' },
+    { label: 'Extracurricular Activities', value: 'What extracurricular activities are offered at RITP?' },
+    { label: 'Research Opportunities', value: 'Are there research opportunities for students at RITP?' },
+    { label: 'Industry Partnerships', value: 'Does RITP have any industry partnerships?' }
+  ];
 
   // Always include at least one related option if available
-  const relatedOption = availableOptions.find(option =>
-    lowercaseInput.includes(option.label.toLowerCase()) &&
+  const relatedOption = allOptions.find(option => 
+    lowercaseInput.includes(option.label.toLowerCase()) && 
     !lowercaseResponse.includes(option.label.toLowerCase())
-  )
+  );
 
   if (relatedOption) {
-    options.push(relatedOption)
+    options.push(relatedOption);
   }
 
   // Add random options to make up to 3 total options
-  while (options.length < 3 && availableOptions.length > options.length) {
-    const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)]
+  while (options.length < 3 && allOptions.length > options.length) {
+    const randomOption = allOptions[Math.floor(Math.random() * allOptions.length)];
     if (!options.includes(randomOption)) {
-      options.push(randomOption)
+      options.push(randomOption);
     }
   }
 
-  return options
-}
+  return options;
+};
 
-export function Chatbot() {
+export function Chatbot({ onClose }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-  const [options, setOptions] = useState<Option[]>([])
-  const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -281,17 +278,6 @@ export function Chatbot() {
         timestamp: new Date()
       }
     ])
-
-    const handleResize = () => {
-      const isKeyboard = window.innerHeight < window.outerHeight
-      setIsKeyboardVisible(isKeyboard)
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
   }, [])
 
   useLayoutEffect(() => {
@@ -299,12 +285,6 @@ export function Chatbot() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages])
-
-  useEffect(() => {
-    if (isKeyboardVisible && inputRef.current) {
-      inputRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [isKeyboardVisible])
 
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
@@ -333,19 +313,20 @@ export function Chatbot() {
           .join('\n')
 
         response = await generateGeminiResponse(
-          `${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`,
+          `${conversationContext}\n\nUser: ${userInput}\n\nA:`,
           SYSTEM_PROMPT
         )
       }
 
       if (response) {
+        const newOptions = generateOptions(userInput, response)
         const assistantMessage: Message = {
           role: 'assistant',
           content: response,
-          timestamp: new Date()
+          timestamp: new Date(),
+          options: newOptions
         }
         setMessages(prev => [...prev, assistantMessage])
-        setOptions(generateOptions(userInput, response, askedQuestions))
       } else {
         throw new Error('No response received')
       }
@@ -356,7 +337,8 @@ export function Chatbot() {
         {
           role: 'assistant',
           content: "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
-          timestamp: new Date()
+          timestamp: new Date(),
+          options: []
         }
       ])
     }
@@ -371,7 +353,6 @@ export function Chatbot() {
   }, [input])
 
   const handleOptionClick = useCallback((option: Option) => {
-    setAskedQuestions(prev => new Set(prev).add(option.value))
     processUserInput(option.value)
   }, [])
 
@@ -384,158 +365,177 @@ export function Chatbot() {
   }
 
   const handleRefresh = () => {
-    setMessages([
-      {
-        role: 'assistant',
-        content: greetings[Math.floor(Math.random() * greetings.length)],
-        timestamp: new Date()
-      }
-    ])
-    setInput('')
-    setIsLoading(false)
-    setOptions([])
-    setAskedQuestions(new Set())
+    if (window.confirm("Are you sure you want to clear the chat? This action cannot be undone.")) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: greetings[Math.floor(Math.random() * greetings.length)],
+          timestamp: new Date()
+        }
+      ])
+      setInput('')
+      setIsLoading(false)
+    }
   }
 
-  const handleClose = useCallback(() => {
-    setIsVisible(false);
-  }, []);
-
-  if (!isVisible) {
-    return null;
-  }
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8 bg-primary-foreground">
-                  <div>
-                    <Image
-                      src="/logorit.png"
-                      height={50}
-                      width={50}
-                      alt='sd' />
-                  </div>
-                </Avatar>
-                <div className="font-semibold">RITP BOT</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleRefresh}>
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleClose}>
-                  <X className="h-4 w-4" />
-                </Button>
+    <Card className="w-full max-w-2xl h-[600px] flex flex-col overflow-hidden">
+      <header className="flex items-center justify-between px-4 py-2 border-b">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8 bg-primary/10">
+            <AvatarImage src="/logorit.png" alt="RITP Logo" />
+            <AvatarFallback className="bg-primary/10 text-primary">RT</AvatarFallback>
+          </Avatar>
+          <span className="font-semibold">RITP BOT</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={handleRefresh} className="text-muted-foreground">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </header>
+
+
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
+          <div className="py-4 space-y-6">
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted/50">
+                {formatDateDivider(new Date())}
               </div>
             </div>
 
-            <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
-              <div className="py-4 space-y-6">
-                <div className="text-center">
-                  <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
-                    {formatDateDivider(new Date())}
-                  </div>
-                </div>
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
-                        <AvatarFallback>
-                          {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div
-                          className={`rounded-2xl px-4 py-2 ${message.role === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-tr-none'
-                            : 'bg-muted text-foreground rounded-tl-none'
-                            }`}
-                        >
-                          {message.content}
-                        </div>
-                        <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                          {formatMessageDate(message.timestamp)}
-                        </div>
-                      </div>
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-blue-500' : 'bg-white'}`}>
+                    <AvatarFallback>
+                      {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <motion.div
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      className={`rounded-2xl px-4 py-2 ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white rounded-tr-none'
+                          : 'bg-white text-black rounded-tl-none'
+                      }`}
+                    >
+                      {message.content}
+                    </motion.div>
+                    <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      {formatMessageDate(message.timestamp)}
                     </div>
                   </div>
-                ))}
-                {options.length > 0 && (
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {options.map((option, index) => (
+                </div>
+                {message.role === 'assistant' && message.options && message.options.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap gap-2 justify-start mt-2"
+                  >
+                    {message.options.map((option, optionIndex) => (
                       <Button
-                        key={index}
+                        key={optionIndex}
                         variant="outline"
                         size="sm"
                         onClick={() => handleOptionClick(option)}
                         disabled={isLoading}
+                        className="hover:bg-primary hover:text-primary-foreground transition-colors bg-background/60"
                       >
                         {option.label}
                       </Button>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex items-start gap-3 max-w-[80%]">
-                      <Avatar className="h-8 w-8 bg-secondary">
-                        <AvatarFallback>
-                          <BotAvatar />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
-                          <div className="flex space-x-2">
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                          </div>
-                        </div>
+              </motion.div>
+            ))}
+
+            {isLoading && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <div className="flex items-start gap-3 max-w-[80%]">
+                  <Avatar className="h-8 w-8 bg-secondary">
+                    <AvatarFallback><BotAvatar /></AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-secondary text-secondary-foreground">
+                      <div className="flex space-x-2">
+                        <motion.div 
+                          className="w-2 h-2 rounded-full bg-current"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 rounded-full bg-current"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 rounded-full bg-current"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                        />
                       </div>
                     </div>
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''}`}>
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={isLoading}
-                  className="flex-grow rounded-full"
-                  aria-label="Chat input"
-                  ref={inputRef}
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  Send
-                </Button>
-              </form>
+                </div>
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+        <div className="p-4 bg-background border-t">
+          <form onSubmit={handleSubmit}>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Ask your question... (Shift + Enter for new line)"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading}
+                className="pr-12"
+                aria-label="Chat input"
+                ref={inputRef}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || !input.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90"
+              >
+                <Send className="h-4 w-4" />
+                <span className="sr-only">Send</span>
+              </Button>
             </div>
-          </Card>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </form>
+        </div>
+      </main>
+    </Card>
   )
 }
 
+export default Chatbot;
