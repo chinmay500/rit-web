@@ -538,4 +538,4 @@ export function Chatbot({ onClose }: ChatbotProps) {
   )
 }
 
-export default Chatbot;
+// export default Chatbot;
