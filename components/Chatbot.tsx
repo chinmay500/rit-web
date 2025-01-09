@@ -7,9 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { generateGeminiResponse } from '@/lib/gemini'
-import { GraduationCap, CalendarDays, Building2, Users, RotateCcw, Send, X } from 'lucide-react'
+import {  RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
