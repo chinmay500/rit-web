@@ -1,13 +1,14 @@
 import Image from 'next/image'
-// import { SiteHeader } from "@/components/site-header"
+import Link from 'next/link'
+import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 import { AchievementSlideshow } from "@/components/achievement-slideshow"
-// import { AdmissionForm } from './admission-form'
+// import { SiteHeader } from "@/components/site-header"
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      
+      {/* <SiteHeader /> */}
       <main className="flex-1">
         <section className="relative">
           {/* Background image */}
@@ -28,12 +29,17 @@ export default function Home() {
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-center">
                   Start your career with a new way of learning
                 </h1>
+                <div className="flex justify-center">
+                  <Link href="/admission">
+                    <Button size="lg" className="text-lg">
+                      Apply Now
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </section>
-
-        
 
         {/* About Institute Section */}
         <section className="py-16 bg-white">
@@ -42,13 +48,13 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <p className="text-lg mb-4">
-                The institute intends to achieve development of technical and non-technical skills in students by providing them best of quality education. The institute aims to prepare students for higher education as well as making them employable after successful completion of course. The institute campus has well developed laboratories, library, class rooms, hostel, canteen & play ground with all amenities. It is one of the best diploma in engineering colleges(Polytechnic) in Pune.
+                  The institute intends to achieve development of technical and non-technical skills in students by providing them best of quality education. The institute aims to prepare students for higher education as well as making them employable after successful completion of course. The institute campus has well developed laboratories, library, class rooms, hostel, canteen & play ground with all amenities. It is one of the best diploma in engineering colleges (Polytechnic) in Pune.
                 </p>
               </div>
               <div className="relative h-64 md:h-full">
                 <Image
                   src="/clg.jpg"
-                  alt="Institute building"
+                  alt="Institute building showcasing modern facilities"
                   fill
                   style={{ objectFit: 'cover' }}
                   className="rounded-lg"
@@ -91,7 +97,7 @@ export default function Home() {
         <section className="py-16 bg-white">
           <div className="container">
             <h2 className="text-3xl font-bold text-center mb-8">Our Recruiters</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-8">
               {[
                 { name: '3S Properties', logo: '/cp1.png' },
                 { name: 'Hyundai', logo: '/cp2.png' },
@@ -100,7 +106,7 @@ export default function Home() {
               ].map((company) => (
                 <div key={company.name} className="bg-gray-100 h-24 flex items-center justify-center rounded-lg p-4">
                   <Image
-                    src={company.logo}
+                    src={company.logo || "/placeholder.svg"}
                     alt={`${company.name} logo`}
                     width={120}
                     height={60}
@@ -116,17 +122,17 @@ export default function Home() {
         <section className="py-16 bg-gray-100">
           <div className="container">
             <h2 className="text-3xl font-bold text-center mb-8">We are Tie-Up With</h2>
-            <div className="flex flex-wrap justify-center items-center gap-8">
+            <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8">
               {[
-                { name: 't1', logo: '/t1.png' },
-                { name: 't2', logo: '/t2.png' },
-                { name: 't3', logo: '/t3.png' },
-                { name: 't4', logo: '/t4.png' },
-                { name: 'joy ebike', logo: '/cp3.png' },
+                { name: 'Technical Partner 1', logo: '/t1.png' },
+                { name: 'Technical Partner 2', logo: '/t2.png' },
+                { name: 'Technical Partner 3', logo: '/t3.png' },
+                { name: 'Technical Partner 4', logo: '/t4.png' },
+                { name: 'Joy E-Bike', logo: '/cp3.png' },
               ].map((partner) => (
-                <div key={partner.name} className="flex items-center justify-center">
+                <div key={partner.name} className="flex items-center justify-center w-1/2 sm:w-1/3 md:w-1/5 p-4">
                   <Image
-                    src={partner.logo}
+                    src={partner.logo || "/placeholder.svg"}
                     alt={`${partner.name} logo`}
                     width={200}
                     height={100}

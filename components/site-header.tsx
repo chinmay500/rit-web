@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import Link from "next/link"
+import Image from 'next/image'
+// import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,39 +13,46 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
-import Image from 'next/image'
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import { ContactForm } from '@/app/Contact-form'
-import { Chatbot } from '@/components/Chatbot'
+
+type NavItemProps = {
+  href: string
+  children: React.ReactNode
+}
+
+type NavDropdownProps = {
+  title: string
+  items: { href: string; label: string }[]
+}
+
+const NavItem = ({ href, children }: NavItemProps) => (
+  <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2">
+    {children}
+  </Link>
+)
+
+const NavDropdown = ({ title, items }: NavDropdownProps) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" className="h-9 px-3 py-2 text-sm font-medium">
+        {title}
+        <ChevronDown className="ml-1 h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="start" className="w-56">
+      {items.map((item, index) => (
+        <DropdownMenuItem key={index} asChild>
+          <Link href={item.href} className="w-full px-3 py-2">{item.label}</Link>
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [chatbotOpen, setChatbotOpen] = useState(false)
-
-  const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2">
-      {children}
-    </Link>
-  )
-
-  const NavDropdown = ({ title, items }: { title: string; items: { href: string; label: string }[] }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-9 px-3 py-2 text-sm font-medium">
-          {title}
-          <ChevronDown className="ml-1 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
-        {items.map((item, index) => (
-          <DropdownMenuItem key={index} asChild>
-            <Link href={item.href} className="w-full px-3 py-2">{item.label}</Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+  // const router = useRouter()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -91,17 +101,12 @@ export function SiteHeader() {
                 <ContactForm onSubmitSuccess={() => setOpen(false)} />
               </DialogContent>
             </Dialog>
-            <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Chat with RITP BOT
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <Chatbot />
-              </DialogContent>
-            </Dialog>
+            <Link href="/chatbot" passHref>
+              <Button variant="outline" size="sm">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with RITP BOT
+              </Button>
+            </Link>
           </div>
         </nav>
 
@@ -145,17 +150,12 @@ export function SiteHeader() {
                   <ContactForm onSubmitSuccess={() => setOpen(false)} />
                 </DialogContent>
               </Dialog>
-              <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Chat with RITP BOT
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
-                  <Chatbot />
-                </DialogContent>
-              </Dialog>
+              <Link href="/chatbot" passHref>
+                <Button variant="outline" size="sm">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Chat with RITP BOT
+                </Button>
+              </Link>
             </div>
           </nav>
         </div>

@@ -25,7 +25,7 @@ export default function RootLayout({
         <div className="relative flex min-h-screen flex-col">
           <SiteHeader />
           <main className="flex-1">{children}</main>
-          <footer className="border-t py-6 md:py-0">
+          {/* <footer className="border-t py-6 md:py-0">
             <div className="container flex flex-col items-center justify-between gap-4 md:h-20 md:flex-row">
               <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
                 Built with Next.js. All rights reserved © {new Date().getFullYear()}
@@ -39,7 +39,7 @@ export default function RootLayout({
                 </a>
               </nav>
             </div>
-          </footer>
+          </footer> */}
         </div>
         <Toaster />
       </body>

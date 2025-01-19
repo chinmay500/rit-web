@@ -7,10 +7,10 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from '@/lib/gemini'
-import { RotateCcw, Send, X } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Send } from 'lucide-react'
 import { format } from 'date-fns'
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image'
+// import { motion, AnimatePresence } from 'framer-motion';
+// import Image from 'next/image'
 
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
@@ -255,7 +255,6 @@ export function Chatbot() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
   const [options, setOptions] = useState<Option[]>([])
   const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -305,6 +304,22 @@ export function Chatbot() {
       inputRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [isKeyboardVisible])
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollArea = scrollAreaRef.current;
+      const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight;
+      scrollArea.style.overflowY = isScrollable ? 'auto' : 'hidden';
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
 
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
@@ -397,145 +412,114 @@ export function Chatbot() {
     setAskedQuestions(new Set())
   }
 
-  const handleClose = useCallback(() => {
-    setIsVisible(false);
-  }, []);
-
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Card className="w-full max-w-[440px] mx-auto h-[600px] flex flex-col rounded-2xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8 bg-primary-foreground">
-                  <div>
-                    <Image
-                      src="/logorit.png"
-                      height={50}
-                      width={50}
-                      alt='sd' />
-                  </div>
-                </Avatar>
-                <div className="font-semibold">RITP BOT</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleRefresh}>
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary-foreground hover:text-primary" onClick={handleClose}>
-                  <X className="h-4 w-4" />
-                </Button>
+    <div className="flex flex-col h-screen pt-20">
+      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-4">
+        <div className="absolute top-4 left-4 flex gap-2">
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleRefresh}>
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        </div>
+        <ScrollArea className="flex-grow px-4 overflow-y-auto" ref={scrollAreaRef}>
+          <div className="py-4 space-y-6 min-h-full">
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
+                {formatDateDivider(new Date())}
               </div>
             </div>
-
-            <ScrollArea className="flex-grow px-4" ref={scrollAreaRef}>
-              <div className="py-4 space-y-6">
-                <div className="text-center">
-                  <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
-                    {formatDateDivider(new Date())}
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
+                    <AvatarFallback>
+                      {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div
+                      className={`rounded-2xl px-4 py-2 ${message.role === 'user'
+                        ? 'bg-primary text-primary-foreground rounded-tr-none'
+                        : 'bg-muted text-foreground rounded-tl-none'
+                        }`}
+                    >
+                      {message.content}
+                    </div>
+                    <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      {formatMessageDate(message.timestamp)}
+                    </div>
                   </div>
                 </div>
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
-                        <AvatarFallback>
-                          {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div
-                          className={`rounded-2xl px-4 py-2 ${message.role === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-tr-none'
-                            : 'bg-muted text-foreground rounded-tl-none'
-                            }`}
-                        >
-                          {message.content}
-                        </div>
-                        <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                          {formatMessageDate(message.timestamp)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {options.length > 0 && (
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {options.map((option, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOptionClick(option)}
-                        disabled={isLoading}
-                      >
-                        {option.label}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex items-start gap-3 max-w-[80%]">
-                      <Avatar className="h-8 w-8 bg-secondary">
-                        <AvatarFallback>
-                          <BotAvatar />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="space-y-1">
-                        <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
-                          <div className="flex space-x-2">
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                            <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            ))}
+            {options.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {options.map((option, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOptionClick(option)}
+                    disabled={isLoading}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex items-start gap-3 max-w-[80%]">
+                  <Avatar className="h-8 w-8 bg-secondary">
+                    <AvatarFallback>
+                      <BotAvatar />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-muted">
+                      <div className="flex space-x-2">
+                        <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
+                        <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
+                        <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
 
-            <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''}`}>
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={isLoading}
-                  className="flex-grow rounded-full"
-                  aria-label="Chat input"
-                  ref={inputRef}
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  Send
-                </Button>
-              </form>
-            </div>
-          </Card>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''} w-full max-w-[600px] mx-auto`}>
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
+              className="flex-grow rounded-full"
+              aria-label="Chat input"
+              ref={inputRef}
+            />
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send
+            </Button>
+          </form>
+        </div>
+      </Card>
+    </div>
   )
 }
 

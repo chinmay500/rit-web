@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "lint": "next lint",
+    "clean": "node clean.js",
+    "build": "npm run clean && next build",
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
