@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import Link from "next/link"
 import Image from 'next/image'
 // import { useRouter } from 'next/navigation'
@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
 import { ContactForm } from '@/app/Contact-form'
 
@@ -56,7 +55,7 @@ export function SiteHeader() {
   // const router = useRouter()
 
   return (
-    <header className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <Image
@@ -94,12 +93,12 @@ export function SiteHeader() {
           <NavItem href="/blog">BLOG</NavItem>
           
           <div className="flex items-center space-x-4">
-            <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+            <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">Contact Us</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
-                <ContactForm onSubmitSuccess={() => setContactOpen(false)} />
+                <ContactForm onSubmitSuccess={() => setOpen(false)} />
               </DialogContent>
             </Dialog>
             <Link href="/chatbot" passHref>
@@ -122,8 +121,8 @@ export function SiteHeader() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden">
-          <nav className="flex flex-col items-center gap-2 py-4 bg-background border-b">
+        <div className="absolute top-16 left-0 right-0 bg-background border-b md:hidden">
+          <nav className="flex flex-col items-center gap-2 py-4">
             <NavItem href="/">HOME</NavItem>
             <NavItem href="/about-us">ABOUT US</NavItem>
             <NavDropdown 
@@ -143,15 +142,12 @@ export function SiteHeader() {
             />
             <NavItem href="/blog">BLOG</NavItem>
             <div className="flex flex-col items-center gap-2 mt-2">
-              <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+              <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">Contact Us</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
-                  <ContactForm onSubmitSuccess={() => {
-                    setContactOpen(false)
-                    setMobileMenuOpen(false)
-                  }} />
+                  <ContactForm onSubmitSuccess={() => setOpen(false)} />
                 </DialogContent>
               </Dialog>
               <Link href="/chatbot" passHref>
