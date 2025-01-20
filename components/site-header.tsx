@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import Image from 'next/image'
+// import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,69 +14,46 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
-import Image from 'next/image'
 import { ContactForm } from '@/app/Contact-form'
 
+type NavItemProps = {
+  href: string
+  children: React.ReactNode
+}
+
+type NavDropdownProps = {
+  title: string
+  items: { href: string; label: string }[]
+}
+
+const NavItem = ({ href, children }: NavItemProps) => (
+  <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2">
+    {children}
+  </Link>
+)
+
+const NavDropdown = ({ title, items }: NavDropdownProps) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" className="h-9 px-3 py-2 text-sm font-medium">
+        {title}
+        <ChevronDown className="ml-1 h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="start" className="w-56">
+      {items.map((item, index) => (
+        <DropdownMenuItem key={index} asChild>
+          <Link href={item.href} className="w-full px-3 py-2">{item.label}</Link>
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
+
 export function SiteHeader() {
-  const [contactOpen, setContactOpen] = useState(false)
+  const [open, setOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
-  const router = useRouter()
-
-  const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2" onClick={() => setMobileMenuOpen(false)}>
-      {children}
-    </Link>
-  )
-
-  const NavDropdown = ({ title, items }: { title: string; items: { href: string; label: string }[] }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-9 px-3 py-2 text-sm font-medium">
-          {title}
-          <ChevronDown className="ml-1 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
-        {items.map((item, index) => (
-          <DropdownMenuItem key={index} asChild>
-            <Link href={item.href} className="w-full px-3 py-2" onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-
-  const handleChatClick = () => {
-    const currentPath = window.location.pathname
-    router.push(`/chatbot?returnTo=${encodeURIComponent(currentPath)}`)
-    setMobileMenuOpen(false)
-  }
-
-  const controlNavbar = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      if (window.scrollY > lastScrollY) { // if scroll down hide the navbar
-        setIsVisible(false)
-      } else { // if scroll up show the navbar
-        setIsVisible(true)
-      }
-
-      // remember current page location to use in the next move
-      setLastScrollY(window.scrollY)
-    }
-  }, [lastScrollY])
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', controlNavbar)
-
-      // cleanup function
-      return () => {
-        window.removeEventListener('scroll', controlNavbar)
-      }
-    }
-  }, [controlNavbar])
+  // const router = useRouter()
 
   return (
     <header className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -123,10 +102,12 @@ export function SiteHeader() {
                 <ContactForm onSubmitSuccess={() => setContactOpen(false)} />
               </DialogContent>
             </Dialog>
-            <Button variant="outline" size="sm" onClick={handleChatClick}>
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Chat with RITP BOT
-            </Button>
+            <Link href="/chatbot" passHref>
+              <Button variant="outline" size="sm">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with RITP BOT
+              </Button>
+            </Link>
           </div>
         </nav>
 
@@ -173,10 +154,12 @@ export function SiteHeader() {
                   }} />
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" size="sm" onClick={handleChatClick}>
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Chat with RITP BOT
-              </Button>
+              <Link href="/chatbot" passHref>
+                <Button variant="outline" size="sm">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Chat with RITP BOT
+                </Button>
+              </Link>
             </div>
           </nav>
         </div>

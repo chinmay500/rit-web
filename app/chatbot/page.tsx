@@ -1,13 +1,20 @@
-'use client'
+import { Chatbot } from '@/components/Chatbot'
+import { Button } from "@/components/ui/button"
+import Link from 'next/link'
 
-// import { useRouter, useSearchParams } from 'next/navigation'
-import { Chatbot } from '@/components/chatbot'
-
-export default function ChatPage() {
-
+export default function ChatbotPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Chatbot />
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="p-4 border-b">
+        <Link href="/">
+          <Button variant="ghost">
+            ← Back
+          </Button>
+        </Link>
+      </header>
+      <main className="flex-grow flex items-center justify-center p-4">
+        <Chatbot />
+      </main>
     </div>
   )
 }
