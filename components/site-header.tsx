@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,19 +10,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
 import { ContactForm } from '@/app/Contact-form'
-import { Chatbot } from '@/components/Chatbot'
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [chatbotOpen, setChatbotOpen] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const router = useRouter()
 
   const NavItem = ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2">
+    <Link href={href} className="text-sm font-medium transition-colors hover:text-primary px-3 py-2" onClick={() => setMobileMenuOpen(false)}>
       {children}
     </Link>
   )
@@ -37,15 +39,45 @@ export function SiteHeader() {
       <DropdownMenuContent align="start" className="w-56">
         {items.map((item, index) => (
           <DropdownMenuItem key={index} asChild>
-            <Link href={item.href} className="w-full px-3 py-2">{item.label}</Link>
+            <Link href={item.href} className="w-full px-3 py-2" onClick={() => setMobileMenuOpen(false)}>{item.label}</Link>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
   )
 
+  const handleChatClick = () => {
+    const currentPath = window.location.pathname
+    router.push(`/chatbot?returnTo=${encodeURIComponent(currentPath)}`)
+    setMobileMenuOpen(false)
+  }
+
+  const controlNavbar = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      if (window.scrollY > lastScrollY) { // if scroll down hide the navbar
+        setIsVisible(false)
+      } else { // if scroll up show the navbar
+        setIsVisible(true)
+      }
+
+      // remember current page location to use in the next move
+      setLastScrollY(window.scrollY)
+    }
+  }, [lastScrollY])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', controlNavbar)
+
+      // cleanup function
+      return () => {
+        window.removeEventListener('scroll', controlNavbar)
+      }
+    }
+  }, [controlNavbar])
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <Image
@@ -83,25 +115,18 @@ export function SiteHeader() {
           <NavItem href="/blog">BLOG</NavItem>
           
           <div className="flex items-center space-x-4">
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={contactOpen} onOpenChange={setContactOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">Contact Us</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
-                <ContactForm onSubmitSuccess={() => setOpen(false)} />
+                <ContactForm onSubmitSuccess={() => setContactOpen(false)} />
               </DialogContent>
             </Dialog>
-            <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Chat with RITP BOT
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <Chatbot />
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="sm" onClick={handleChatClick}>
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Chat with RITP BOT
+            </Button>
           </div>
         </nav>
 
@@ -116,8 +141,8 @@ export function SiteHeader() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-background border-b md:hidden">
-          <nav className="flex flex-col items-center gap-2 py-4">
+        <div className="md:hidden">
+          <nav className="flex flex-col items-center gap-2 py-4 bg-background border-b">
             <NavItem href="/">HOME</NavItem>
             <NavItem href="/about-us">ABOUT US</NavItem>
             <NavDropdown 
@@ -137,25 +162,21 @@ export function SiteHeader() {
             />
             <NavItem href="/blog">BLOG</NavItem>
             <div className="flex flex-col items-center gap-2 mt-2">
-              <Dialog open={open} onOpenChange={setOpen}>
+              <Dialog open={contactOpen} onOpenChange={setContactOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">Contact Us</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
-                  <ContactForm onSubmitSuccess={() => setOpen(false)} />
+                  <ContactForm onSubmitSuccess={() => {
+                    setContactOpen(false)
+                    setMobileMenuOpen(false)
+                  }} />
                 </DialogContent>
               </Dialog>
-              <Dialog open={chatbotOpen} onOpenChange={setChatbotOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Chat with RITP BOT
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
-                  <Chatbot />
-                </DialogContent>
-              </Dialog>
+              <Button variant="outline" size="sm" onClick={handleChatClick}>
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with RITP BOT
+              </Button>
             </div>
           </nav>
         </div>

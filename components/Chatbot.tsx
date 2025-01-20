@@ -4,14 +4,13 @@ import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { generateGeminiResponse } from '@/lib/gemini'
+// import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { generateGeminiResponse} from '@/lib/gemini'
 import { RotateCcw, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image'
-
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -181,6 +180,7 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  options?: Option[]
 }
 
 interface Option {
@@ -189,11 +189,15 @@ interface Option {
 }
 
 const BotAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-bot"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+  </svg>
 )
 
 const UserAvatar = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+  </svg>
 )
 
 const questionKeywords = [
@@ -203,7 +207,7 @@ const questionKeywords = [
 
 const splitQuestions = (input: string): string[] => {
   const sentences = input.split(/[.!?]+/).filter(Boolean).map(s => s.trim())
-  return sentences.filter(sentence =>
+  return sentences.filter(sentence => 
     questionKeywords.some(keyword => sentence.toLowerCase().includes(keyword))
   )
 }
@@ -230,8 +234,8 @@ const generateOptions = (userInput: string, botResponse: string, askedQuestions:
   const availableOptions = allOptions.filter(option => !askedQuestions.has(option.value))
 
   // Always include at least one related option if available
-  const relatedOption = availableOptions.find(option =>
-    lowercaseInput.includes(option.label.toLowerCase()) &&
+  const relatedOption = availableOptions.find(option => 
+    lowercaseInput.includes(option.label.toLowerCase()) && 
     !lowercaseResponse.includes(option.label.toLowerCase())
   )
 
@@ -309,8 +313,8 @@ export function Chatbot() {
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
 
-    const userMessage: Message = {
-      role: 'user',
+    const userMessage: Message = { 
+      role: 'user', 
       content: userInput,
       timestamp: new Date()
     }
@@ -337,12 +341,14 @@ export function Chatbot() {
           SYSTEM_PROMPT
         )
       }
-
+      
       if (response) {
+        const newOptions = generateOptions(userInput, response, askedQuestions)
         const assistantMessage: Message = {
           role: 'assistant',
           content: response,
-          timestamp: new Date()
+          timestamp: new Date(),
+          options: newOptions
         }
         setMessages(prev => [...prev, assistantMessage])
         setOptions(generateOptions(userInput, response, askedQuestions))
@@ -356,7 +362,8 @@ export function Chatbot() {
         {
           role: 'assistant',
           content: "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
-          timestamp: new Date()
+          timestamp: new Date(),
+          options: []
         }
       ])
     }
@@ -417,13 +424,9 @@ export function Chatbot() {
             <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 bg-primary-foreground">
-                  <div>
-                    <Image
-                      src="/logorit.png"
-                      height={50}
-                      width={50}
-                      alt='sd' />
-                  </div>
+                  <AvatarFallback>
+                    <BotAvatar />
+                  </AvatarFallback>
                 </Avatar>
                 <div className="font-semibold">RITP BOT</div>
               </div>
@@ -457,10 +460,11 @@ export function Chatbot() {
                       </Avatar>
                       <div className="space-y-1">
                         <div
-                          className={`rounded-2xl px-4 py-2 ${message.role === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-tr-none'
-                            : 'bg-muted text-foreground rounded-tl-none'
-                            }`}
+                          className={`rounded-2xl px-4 py-2 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground rounded-tr-none'
+                              : 'bg-muted text-foreground rounded-tl-none'
+                          }`}
                         >
                           {message.content}
                         </div>
@@ -522,8 +526,8 @@ export function Chatbot() {
                   aria-label="Chat input"
                   ref={inputRef}
                 />
-                <Button
-                  type="submit"
+                <Button 
+                  type="submit" 
                   disabled={isLoading || !input.trim()}
                   className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
