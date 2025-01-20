@@ -9,8 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from "@/lib/gemini"
 import { ArrowLeft, RotateCcw, Send } from "lucide-react"
 import { format } from "date-fns"
-// import { motion, AnimatePresence } from "framer-motion"
-// import Image from "next/image"
+
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -467,8 +466,8 @@ export function Chatbot() {
   }
 
   return (
-    <div className="flex flex-col h-screen pt-20">
-      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-4">
+    <div className="flex flex-col h-screen pt-24 md:pt-20">
+      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-6 md:mt-4">
         <div className="absolute top-4 left-4 flex gap-2">
           <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => window.history.back()}>
             <ArrowLeft className="h-4 w-4" />
@@ -478,7 +477,7 @@ export function Chatbot() {
           </Button>
         </div>
         <ScrollArea
-          className={`flex-grow px-4 overflow-y-auto ${isKeyboardVisible ? "pb-[120px]" : ""}`}
+          className={`flex-grow px-4 overflow-y-auto pt-2 ${isKeyboardVisible ? "pb-[120px]" : ""}`}
           ref={scrollAreaRef}
         >
           <div className="py-4 space-y-6 min-h-full">
