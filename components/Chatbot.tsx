@@ -1,18 +1,16 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { generateGeminiResponse } from '@/lib/gemini'
-import { ArrowLeft, RotateCcw, Send } from 'lucide-react'
-import { format } from 'date-fns'
-// import { motion, AnimatePresence } from 'framer-motion';
-// import Image from 'next/image'
-
+import { generateGeminiResponse } from "@/lib/gemini"
+import { ArrowLeft, RotateCcw, Send } from "lucide-react"
+import { format } from "date-fns"
+// import { motion, AnimatePresence } from "framer-motion"
+// import Image from "next/image"
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -175,14 +173,10 @@ IMPORTANT INSTRUCTIONS:
 
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune.`
 
-
-
-
 interface Message {
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
   timestamp: Date
-  options?: Option[]
 }
 
 interface Option {
@@ -191,27 +185,66 @@ interface Option {
 }
 
 const BotAvatar = () => (
-  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    className="lucide lucide-bot"
+  >
+    <path d="M12 8V4H8" />
+    <rect width="16" height="12" x="4" y="8" rx="2" />
+    <path d="M2 14h2" />
+    <path d="M20 14h2" />
+    <path d="M15 13v2" />
+    <path d="M9 13v2" />
   </svg>
 )
 
 const UserAvatar = () => (
-  <svg className="h-full w-full text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    className="lucide lucide-user"
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 )
 
 const questionKeywords = [
-  'cutoff', 'admission', 'department', 'course', 'fee', 'placement',
-  'faculty', 'infrastructure', 'hostel', 'scholarship', 'exam', 'events'
+  "cutoff",
+  "admission",
+  "department",
+  "course",
+  "fee",
+  "placement",
+  "faculty",
+  "infrastructure",
+  "hostel",
+  "scholarship",
+  "exam",
+  "events",
 ]
 
 const splitQuestions = (input: string): string[] => {
-  const sentences = input.split(/[.!?]+/).filter(Boolean).map(s => s.trim())
-  return sentences.filter(sentence => 
-    questionKeywords.some(keyword => sentence.toLowerCase().includes(keyword))
-  )
+  const sentences = input
+    .split(/[.!?]+/)
+    .filter(Boolean)
+    .map((s) => s.trim())
+  return sentences.filter((sentence) => questionKeywords.some((keyword) => sentence.toLowerCase().includes(keyword)))
 }
 
 const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
@@ -220,25 +253,25 @@ const generateOptions = (userInput: string, botResponse: string, askedQuestions:
   const lowercaseResponse = botResponse.toLowerCase()
 
   const allOptions = [
-    { label: 'Course Details', value: 'Tell me more about the courses offered' },
-    { label: 'Admission Process', value: 'What is the admission process?' },
-    { label: 'Placement Statistics', value: 'What are the placement statistics?' },
-    { label: 'Faculty Information', value: 'Tell me about the faculty' },
-    { label: 'College Events', value: 'What are the upcoming college events?' },
-    { label: 'Infrastructure', value: 'Describe the college infrastructure' },
-    { label: 'Scholarships', value: 'Are there any scholarships available?' },
-    { label: 'Extracurricular Activities', value: 'What extracurricular activities are offered?' },
-    { label: 'Research Opportunities', value: 'Are there research opportunities for students?' },
-    { label: 'Industry Partnerships', value: 'Does the college have any industry partnerships?' }
+    { label: "Course Details", value: "Tell me more about the courses offered" },
+    { label: "Admission Process", value: "What is the admission process?" },
+    { label: "Placement Statistics", value: "What are the placement statistics?" },
+    { label: "Faculty Information", value: "Tell me about the faculty" },
+    { label: "College Events", value: "What are the upcoming college events?" },
+    { label: "Infrastructure", value: "Describe the college infrastructure" },
+    { label: "Scholarships", value: "Are there any scholarships available?" },
+    { label: "Extracurricular Activities", value: "What extracurricular activities are offered?" },
+    { label: "Research Opportunities", value: "Are there research opportunities for students?" },
+    { label: "Industry Partnerships", value: "Does the college have any industry partnerships?" },
   ]
 
   // Filter out already asked questions
-  const availableOptions = allOptions.filter(option => !askedQuestions.has(option.value))
+  const availableOptions = allOptions.filter((option) => !askedQuestions.has(option.value))
 
   // Always include at least one related option if available
-  const relatedOption = availableOptions.find(option => 
-    lowercaseInput.includes(option.label.toLowerCase()) && 
-    !lowercaseResponse.includes(option.label.toLowerCase())
+  const relatedOption = availableOptions.find(
+    (option) =>
+      lowercaseInput.includes(option.label.toLowerCase()) && !lowercaseResponse.includes(option.label.toLowerCase()),
   )
 
   if (relatedOption) {
@@ -258,7 +291,7 @@ const generateOptions = (userInput: string, botResponse: string, askedQuestions:
 
 export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
   const [options, setOptions] = useState<Option[]>([])
@@ -274,28 +307,40 @@ export function Chatbot() {
     "Welcome to RITP Lohegaon! 🎓 I'm your virtual assistant, eager to answer your questions.",
     "Hey there! Ready to explore RITP Lohegaon? I'm here to guide you through everything you need to know.",
     "Good day! 🌟 I'm RITP BOT, your personal guide to all things RITP Lohegaon. What can I help you with?",
-    "Hello and welcome to RITP Lohegaon! I'm your AI companion, ready to assist with any inquiries you might have."
+    "Hello and welcome to RITP Lohegaon! I'm your AI companion, ready to assist with any inquiries you might have.",
   ]
 
   useEffect(() => {
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)]
     setMessages([
       {
-        role: 'assistant',
+        role: "assistant",
         content: `${randomGreeting} Feel free to ask me multiple questions at once - I can handle it!`,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     ])
 
     const handleResize = () => {
-      const isKeyboard = window.innerHeight < window.outerHeight
-      setIsKeyboardVisible(isKeyboard)
+      const visualViewport = window?.visualViewport
+      if (!visualViewport) return
+
+      const isKeyboardVisible = visualViewport.height < window.innerHeight
+      setIsKeyboardVisible(isKeyboardVisible)
+
+      if (isKeyboardVisible && inputRef.current) {
+        window.scrollTo({
+          top: visualViewport.offsetTop + visualViewport.height,
+          behavior: "smooth",
+        })
+      }
     }
 
-    window.addEventListener('resize', handleResize)
+    window.visualViewport?.addEventListener("resize", handleResize)
+    window.visualViewport?.addEventListener("scroll", handleResize)
 
     return () => {
-      window.removeEventListener('resize', handleResize)
+      window.visualViewport?.removeEventListener("resize", handleResize)
+      window.visualViewport?.removeEventListener("scroll", handleResize)
     }
   }, [])
 
@@ -307,36 +352,35 @@ export function Chatbot() {
 
   useEffect(() => {
     if (isKeyboardVisible && inputRef.current) {
-      inputRef.current.scrollIntoView({ behavior: 'smooth' })
+      inputRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [isKeyboardVisible])
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollArea = scrollAreaRef.current;
-      const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight;
-      scrollArea.style.overflowY = isScrollable ? 'auto' : 'hidden';
+      const scrollArea = scrollAreaRef.current
+      const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight
+      scrollArea.style.overflowY = isScrollable ? "auto" : "hidden"
     }
-  }, [messages]);
+  }, [messages])
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden"
     return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, []);
-
+      document.body.style.overflow = "auto"
+    }
+  }, [])
 
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
 
-    const userMessage: Message = { 
-      role: 'user', 
+    const userMessage: Message = {
+      role: "user",
       content: userInput,
-      timestamp: new Date()
+      timestamp: new Date(),
     }
-    setMessages(prev => [...prev, userMessage])
-    setInput('')
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
     setIsLoading(true)
 
     try {
@@ -345,77 +389,78 @@ export function Chatbot() {
 
       if (questions.length > 1) {
         response = await generateGeminiResponse(
-          `User has asked multiple questions: ${questions.join(', ')}. Please provide a structured response addressing each question separately.`,
-          SYSTEM_PROMPT
+          `User has asked multiple questions: ${questions.join(", ")}. Please provide a structured response addressing each question separately.`,
+          SYSTEM_PROMPT,
         )
       } else {
         const conversationContext = messages
-          .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-          .join('\n')
+          .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+          .join("\n")
 
         response = await generateGeminiResponse(
           `${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`,
-          SYSTEM_PROMPT
+          SYSTEM_PROMPT,
         )
       }
-      
+
       if (response) {
-        const newOptions = generateOptions(userInput, response, askedQuestions)
         const assistantMessage: Message = {
-          role: 'assistant',
+          role: "assistant",
           content: response,
           timestamp: new Date(),
-          options: newOptions
         }
-        setMessages(prev => [...prev, assistantMessage])
+        setMessages((prev) => [...prev, assistantMessage])
         setOptions(generateOptions(userInput, response, askedQuestions))
       } else {
-        throw new Error('No response received')
+        throw new Error("No response received")
       }
     } catch (error) {
-      console.error('Error:', error)
-      setMessages(prev => [
+      console.error("Error:", error)
+      setMessages((prev) => [
         ...prev,
         {
-          role: 'assistant',
-          content: "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
+          role: "assistant",
+          content:
+            "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
           timestamp: new Date(),
-          options: []
-        }
+        },
       ])
     }
 
     setIsLoading(false)
   }
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-    processUserInput(input)
-  }, [input])
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!input.trim()) return
+      processUserInput(input)
+    },
+    [input],
+  )
 
   const handleOptionClick = useCallback((option: Option) => {
-    setAskedQuestions(prev => new Set(prev).add(option.value))
+    setAskedQuestions((prev) => new Set(prev).add(option.value))
     processUserInput(option.value)
   }, [])
 
   const formatMessageDate = (date: Date) => {
-    return format(date, 'h:mm a')
+    return format(date, "h:mm a")
   }
 
   const formatDateDivider = (date: Date) => {
-    return format(date, 'MMMM d, yyyy')
+    return format(date, "MMMM d, yyyy")
   }
 
   const handleRefresh = () => {
     setMessages([
       {
-        role: 'assistant',
+        role: "assistant",
         content: greetings[Math.floor(Math.random() * greetings.length)],
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     ])
-    setInput('')
+    setInput("")
     setIsLoading(false)
     setOptions([])
     setAskedQuestions(new Set())
@@ -432,7 +477,10 @@ export function Chatbot() {
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
-        <ScrollArea className="flex-grow px-4 overflow-y-auto" ref={scrollAreaRef}>
+        <ScrollArea
+          className={`flex-grow px-4 overflow-y-auto ${isKeyboardVisible ? "pb-[120px]" : ""}`}
+          ref={scrollAreaRef}
+        >
           <div className="py-4 space-y-6 min-h-full">
             <div className="text-center">
               <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
@@ -440,26 +488,26 @@ export function Chatbot() {
               </div>
             </div>
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`flex items-start gap-3 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <Avatar className={`h-8 w-8 ${message.role === 'user' ? 'bg-primary' : 'bg-secondary'}`}>
-                    <AvatarFallback>
-                      {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
-                    </AvatarFallback>
+              <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`flex items-start gap-3 max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                >
+                  <Avatar className={`h-8 w-8 ${message.role === "user" ? "bg-primary" : "bg-secondary"}`}>
+                    <AvatarFallback>{message.role === "user" ? <UserAvatar /> : <BotAvatar />}</AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
                     <div
-                      className={`rounded-2xl px-4 py-2 ${message.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-tr-none'
-                        : 'bg-muted text-foreground rounded-tl-none'
-                        }`}
+                      className={`rounded-2xl px-4 py-2 ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-tr-none"
+                          : "bg-muted text-foreground rounded-tl-none"
+                      }`}
                     >
                       {message.content}
                     </div>
-                    <div className={`text-xs text-muted-foreground ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    <div
+                      className={`text-xs text-muted-foreground ${message.role === "user" ? "text-right" : "text-left"}`}
+                    >
                       {formatMessageDate(message.timestamp)}
                     </div>
                   </div>
@@ -505,7 +553,9 @@ export function Chatbot() {
           </div>
         </ScrollArea>
 
-        <div className={`p-4 border-t ${isKeyboardVisible ? 'fixed bottom-0 left-0 right-0 bg-background' : ''} w-full max-w-[600px] mx-auto`}>
+        <div
+          className={`p-4 border-t ${isKeyboardVisible ? "fixed bottom-0 left-0 right-0 bg-background z-50 pb-safe" : ""} w-full max-w-[600px] mx-auto`}
+        >
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
               type="text"
