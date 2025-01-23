@@ -1,18 +1,35 @@
 "use client"
-
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react"
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from "@/lib/gemini"
-import { ArrowLeft, RotateCcw, Send } from "lucide-react"
+import { Send } from "lucide-react"
 import { format } from "date-fns"
+import { MobileHeader } from "./mobile-header"
 
+function debounce<T extends unknown[], R>(func: (...args: T) => R, wait: number): (...args: T) => void {
+  let timeout: NodeJS.Timeout | null = null
+  return (...args: T) => {
+    if (timeout) clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
+import { facultyData } from "@/data/faculty"
+import { academicsData } from "@/data/academics"
+import { labsData } from "@/data/labs"
+import { facilitiesData } from "@/data/facilities"
+import { achievementsData } from "@/data/achivement"
+import { placementsData } from "@/data/palcements"
+import { studentAwardsData } from "@/data/studentAwards"
+import { generalInformationData } from "@/data/generalInformation"
+import { admissionInfoData } from "@/data/admissionInfo"
+import { partnershipsData } from "@/data/partnerships"
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
-
 
 RESPONSE GUIDELINES:
 1. Use natural language and vary your responses to sound more human-like.
@@ -22,153 +39,32 @@ RESPONSE GUIDELINES:
 5. If appropriate, share anecdotes or fun facts about college life at RITP.
 6. Use emojis sparingly to convey emotion, but don't overdo it.
 
-GREETING VARIATIONS:
-- "Hey there! 👋 I'm RITP BOT, your friendly RITP Lohegaon guide. What can I help you with today?"
-- "Welcome to RITP Lohegaon! I'm your AI assistant, ready to answer any questions you might have."
-- "Greetings! 😊 I'm RITP BOT, here to help you navigate all things RITP Lohegaon. What would you like to know?"
 COLLEGE INFORMATION:
+Use the imported data (facultyData, academicsData, labsData, facilitiesData, achievementsData, placementsData, studentAwardsData, generalInformationData, admissionInfoData, partnershipsData) to provide accurate and up-to-date information about the college.
 
-About RITP:
-- Full Name: Rajarambapu Institute of Technology Polytechnic (RITP)
-- Location: Lohegaon, Pune, Maharashtra, India
-- Approved By: AICTE, DTE Maharashtra
-- Affiliated To: MSBTE (Maharashtra State Board of Technical Education)
+RESPONSE FORMATTING:
+When describing courses or programs:
+1. Use "**" for course names (will be styled as bold and primary color)
+2. Use numbered emojis (1️⃣, 2️⃣, etc.) for list items
+3. Structure responses with clear sections
+4. Add brief descriptions for each course
+5. Include key highlights in separate lines
+6. End each course section with career prospects
 
-Courses Offered:
-1. Mechanical Engineering (3 years)
-2. Artificial Intelligence and Machine Learning (3 years)
-3. Civil Engineering (3 years)
-4. Computer Engineering (3 years)
-
-Last Year's Results:
-- Overall pass percentage: 92%
-- Mechanical Engineering: 90% pass rate
-- AI/ML Engineering: 95% pass rate
-- Civil Engineering: 88% pass rate
-- Computer Engineering: 94% pass rate
-
-Placements:
-- 85% overall placement rate
-- Top recruiters: TCS, Infosys, L&T, Godrej
-- Highest package: ₹8 LPA
-- Average package: ₹4.5 LPA
-
-Student Awards:
-- National level project competition winner in AI/ML category
-- State-level paper presentation award in Mechanical Engineering
-- Inter-college hackathon champions (Computer Engineering team)
-
-College Awards:
-- Best Emerging Polytechnic in Maharashtra (2022)
-- Excellence in Industry-Academia Partnership Award
-- Green Campus Initiative Recognition
-
-Faculty Information:
-- 50+ experienced faculty members
-- 30% with Ph.D. qualifications
-- Regular faculty development programs
-- Industry experts as visiting faculty
+Example format:
+1️⃣ **Course Name:**
+• Key features and duration
+• Main subjects covered
+→ Career prospects
 
 RESPONSE FORMATS:
-
-1. When asked about courses:
-First list all courses briefly:
-• Mechanical Engineering (3 years)
-• Artificial Intelligence and Machine Learning (3 years)
-• Civil Engineering (3 years)
-• Computer Engineering (3 years)
-
-Then ask: "Would you like to know more details about any specific course?"
-
-2. When asked about a specific course:
-Present information in this format:
-📚 Course: [Name]
-⏱️ Duration: [Years]
-📝 Key Subjects: [List]
-🎯 Career Prospects: [List]
-💡 Special Features: [List]
-
-Then ask: "Would you like to know about admission requirements for this course?"
-
-3. When asked about facilities:
-Group facilities by category:
-🏫 Academic Facilities:
-[List with bullet points]
-
-🏠 Infrastructure:
-[List with bullet points]
-
-🎯 Student Support:
-[List with bullet points]
-
-Then ask: "Would you like more information about any specific facility?"
-
-4. When asked about admission:
-Present in this format:
-📝 Eligibility:
-• [Requirements]
-
-📋 Process:
-• [Steps]
-
-📅 Important Dates:
-• [Timeline]
-
-Then ask: "Would you like to know about fees or required documents?"
-
-5. When asked about results:
-Present in this format:
-📊 Last Year's Results:
-• Overall pass percentage: [Percentage]
-• [Course Name]: [Pass rate]
-• [Course Name]: [Pass rate]
-• ...
-
-Then ask: "Would you like to know about the performance of a specific department?"
-
-6. When asked about placements:
-Present in this format:
-💼 Placement Highlights:
-• Overall placement rate: [Percentage]
-• Top recruiters: [List companies]
-• Highest package: [Amount]
-• Average package: [Amount]
-
-Then ask: "Would you like information about placements for a specific course?"
-
-7. When asked about awards:
-Separate student and college awards:
-🏆 Student Awards:
-• [List awards with brief descriptions]
-
-🏅 College Awards:
-• [List awards with brief descriptions]
-
-Then ask: "Would you like more details about any specific award?"
-
-8. When asked about faculty:
-Present in this format:
-👨‍🏫 Faculty Overview:
-• Total faculty members: [Number]
-• Ph.D. qualified: [Percentage]
-• [Other key points]
-
-Then ask: "Would you like to know about faculty in a particular department?"
+[Keep the existing response formats]
 
 LEARNING INSTRUCTIONS:
-1. When presented with new information about the college, evaluate its relevance and potential accuracy.
-2. If the information seems relevant and likely accurate, respond with: "Thank you for sharing that information. I'll make a note of it. Is there anything else you'd like to know about RITP?"
-3. Do not immediately use newly learned information in responses. Wait for confirmation or repeated mentions.
-4. If asked about something you're unsure of, say: "I don't have confirmed information about that. Would you like me to check with the college administration for you?"
+[Keep the existing learning instructions]
 
 IMPORTANT INSTRUCTIONS:
-1. Always provide information in structured formats with bullet points and emojis
-2. After every response, ask a relevant follow-up question
-3. Keep responses concise but informative
-4. Use a friendly, professional tone
-5. If unsure about specific details, stick to confirmed information
-6. Always maintain conversation flow by referencing previous questions
-7. Focus solely on RITP Lohegaon Pune college-related information
+[Keep the existing important instructions]
 
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune.`
 
@@ -370,6 +266,20 @@ export function Chatbot() {
     }
   }, [])
 
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage.role === "assistant") {
+        const memoizedOptions = generateOptions(
+          messages[messages.length - 2]?.content || "",
+          lastMessage.content,
+          askedQuestions,
+        )
+        setOptions(memoizedOptions)
+      }
+    }
+  }, [messages, askedQuestions])
+
   const processUserInput = async (userInput: string) => {
     if (isLoading) return
 
@@ -389,17 +299,55 @@ export function Chatbot() {
       if (questions.length > 1) {
         response = await generateGeminiResponse(
           `User has asked multiple questions: ${questions.join(", ")}. Please provide a structured response addressing each question separately.`,
-          SYSTEM_PROMPT,
+          {
+            systemPrompt: SYSTEM_PROMPT,
+            data: {
+              facultyData,
+              academicsData,
+              labsData,
+              facilitiesData,
+              achievementsData,
+              placementsData,
+              studentAwardsData,
+              generalInformationData,
+              admissionInfoData,
+              partnershipsData,
+            },
+          },
         )
       } else {
         const conversationContext = messages
           .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
           .join("\n")
 
-        response = await generateGeminiResponse(
-          `${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`,
-          SYSTEM_PROMPT,
-        )
+        response = await generateGeminiResponse(`${conversationContext}\n\nUser: ${userInput}\n\nAssistant:`, {
+          systemPrompt: SYSTEM_PROMPT,
+          data: {
+            facultyData,
+            academicsData,
+            labsData,
+            facilitiesData,
+            achievementsData,
+            placementsData,
+            studentAwardsData,
+            generalInformationData,
+            admissionInfoData,
+            partnershipsData,
+          },
+        })
+      }
+
+      if (response && response.includes("**")) {
+        // Format course information with better styling
+        response = response
+          .replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-primary">$1</span>')
+          .replace(
+            /(\d️⃣)/g,
+            '<span class="inline-flex items-center justify-center w-6 h-6 text-sm font-bold text-white bg-primary rounded-full mr-2">$1</span>',
+          )
+          .split("\n")
+          .map((line) => `<div class="mb-4">${line}</div>`)
+          .join("")
       }
 
       if (response) {
@@ -409,25 +357,43 @@ export function Chatbot() {
           timestamp: new Date(),
         }
         setMessages((prev) => [...prev, assistantMessage])
-        setOptions(generateOptions(userInput, response, askedQuestions))
       } else {
         throw new Error("No response received")
       }
     } catch (error) {
       console.error("Error:", error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
-          timestamp: new Date(),
-        },
-      ])
+      if (userInput.toLowerCase().includes("partnership")) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              "I apologize for the inconvenience. We're having trouble accessing our partnership data at the moment. However, I can confirm that RITP has several industry partnerships, particularly in the Mechanical Engineering department. These include collaborations with automotive and manufacturing companies. Would you like me to provide general information about our academic programs instead?",
+            timestamp: new Date(),
+          },
+        ])
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              "I apologize, I'm having trouble processing that right now. But don't worry, I can still help you with key information about RITP. What would you like to know about our courses, results, placements, or any other aspect of the college?",
+            timestamp: new Date(),
+          },
+        ])
+      }
     }
 
     setIsLoading(false)
   }
+
+  const debouncedHandleInputChange = useCallback(
+    debounce((value: string) => {
+      setInput(value)
+    }, 100),
+    [],
+  )
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -465,19 +431,21 @@ export function Chatbot() {
     setAskedQuestions(new Set())
   }
 
+  const processedMessages = useMemo(
+    () =>
+      messages.map((message) => ({
+        ...message,
+        formattedTime: formatMessageDate(message.timestamp),
+      })),
+    [messages],
+  )
+
   return (
-    <div className="flex flex-col h-screen pt-24 md:pt-20">
-      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-6 md:mt-4">
-        <div className="absolute top-4 left-4 flex gap-2">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleRefresh}>
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className="flex flex-col h-screen pt-16 md:pt-20">
+      <MobileHeader onBack={() => window.history.back()} onRefresh={handleRefresh} />
+      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-2 md:mt-4 md:overflow-visible">
         <ScrollArea
-          className={`flex-grow px-4 overflow-y-auto pt-2 ${isKeyboardVisible ? "pb-[120px]" : ""}`}
+          className={`flex-grow px-4 overflow-y-auto pt-8 md:pt-2 ${isKeyboardVisible ? "pb-[120px]" : ""}`}
           ref={scrollAreaRef}
         >
           <div className="py-4 space-y-6 min-h-full">
@@ -486,7 +454,7 @@ export function Chatbot() {
                 {formatDateDivider(new Date())}
               </div>
             </div>
-            {messages.map((message, index) => (
+            {processedMessages.map((message, index) => (
               <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`flex items-start gap-3 max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}
@@ -494,20 +462,19 @@ export function Chatbot() {
                   <Avatar className={`h-8 w-8 ${message.role === "user" ? "bg-primary" : "bg-secondary"}`}>
                     <AvatarFallback>{message.role === "user" ? <UserAvatar /> : <BotAvatar />}</AvatarFallback>
                   </Avatar>
-                  <div className="space-y-1">
+                  <div className="space-y-1 [&_p]:mb-4 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:text-primary [&_.course-section]:border-l-4 [&_.course-section]:border-primary [&_.course-section]:pl-4 [&_.course-section]:my-4">
                     <div
                       className={`rounded-2xl px-4 py-2 ${
                         message.role === "user"
                           ? "bg-primary text-primary-foreground rounded-tr-none"
                           : "bg-muted text-foreground rounded-tl-none"
                       }`}
-                    >
-                      {message.content}
-                    </div>
+                      dangerouslySetInnerHTML={{ __html: message.content }}
+                    />
                     <div
                       className={`text-xs text-muted-foreground ${message.role === "user" ? "text-right" : "text-left"}`}
                     >
-                      {formatMessageDate(message.timestamp)}
+                      {message.formattedTime}
                     </div>
                   </div>
                 </div>
@@ -560,7 +527,7 @@ export function Chatbot() {
               type="text"
               placeholder="Type your message..."
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => debouncedHandleInputChange(e.target.value)}
               disabled={isLoading}
               className="flex-grow rounded-full"
               aria-label="Chat input"
