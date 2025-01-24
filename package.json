@@ -1,11 +1,11 @@
 {
   "name": "rit-web",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "lint": "next lint",
     "clean": "node clean.js",
-    "build": "npm run clean && next build",
+    "build": "rimraf .next && next build",
     "dev": "next dev",
     "start": "next start"
   },
@@ -54,6 +54,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
     "postcss": "^8",
+    "rimraf": "^3.0.2",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
