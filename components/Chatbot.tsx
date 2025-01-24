@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from "@/lib/gemini"
 import { Send } from "lucide-react"
 import { format } from "date-fns"
-import { MobileHeader } from "./mobile-header"
+import { ArrowLeftIcon } from "lucide-react"
 
 function debounce<T extends unknown[], R>(func: (...args: T) => R, wait: number): (...args: T) => void {
   let timeout: NodeJS.Timeout | null = null
@@ -28,6 +28,7 @@ import { studentAwardsData } from "@/data/studentAwards"
 import { generalInformationData } from "@/data/generalInformation"
 import { admissionInfoData } from "@/data/admissionInfo"
 import { partnershipsData } from "@/data/partnerships"
+import Link from "next/link"
 
 const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
 
@@ -191,6 +192,7 @@ export function Chatbot() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
   const [options, setOptions] = useState<Option[]>([])
   const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
+  const [isMobileHeaderVisible, setIsMobileHeaderVisible] = useState(true)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -407,6 +409,7 @@ export function Chatbot() {
   const handleOptionClick = useCallback((option: Option) => {
     setAskedQuestions((prev) => new Set(prev).add(option.value))
     processUserInput(option.value)
+    setIsMobileHeaderVisible(false)
   }, [])
 
   const formatMessageDate = (date: Date) => {
@@ -417,19 +420,7 @@ export function Chatbot() {
     return format(date, "MMMM d, yyyy")
   }
 
-  const handleRefresh = () => {
-    setMessages([
-      {
-        role: "assistant",
-        content: greetings[Math.floor(Math.random() * greetings.length)],
-        timestamp: new Date(),
-      },
-    ])
-    setInput("")
-    setIsLoading(false)
-    setOptions([])
-    setAskedQuestions(new Set())
-  }
+  
 
   const processedMessages = useMemo(
     () =>
@@ -441,8 +432,9 @@ export function Chatbot() {
   )
 
   return (
-    <div className="flex flex-col h-screen pt-16 md:pt-20">
-      <MobileHeader onBack={() => window.history.back()} onRefresh={handleRefresh} />
+    <div className={`flex flex-col h-screen ${isMobileHeaderVisible ? "pt-16" : "pt-0"} md:pt-20`}>
+      
+      
       <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-2xl shadow-lg overflow-hidden mt-2 md:mt-4 md:overflow-visible">
         <ScrollArea
           className={`flex-grow px-4 overflow-y-auto pt-8 md:pt-2 ${isKeyboardVisible ? "pb-[120px]" : ""}`}
@@ -450,9 +442,16 @@ export function Chatbot() {
         >
           <div className="py-4 space-y-6 min-h-full">
             <div className="text-center">
+            <Link href="/" className='flex items-start gap-3'>
+          <Button variant="ghost" className="bg-black text-slate-50">
+            ← Back
+          </Button>
+        </Link>
               <div className="text-xs text-muted-foreground px-2 py-1 inline-block rounded-md bg-muted">
+                
                 {formatDateDivider(new Date())}
               </div>
+              
             </div>
             {processedMessages.map((message, index) => (
               <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -537,13 +536,23 @@ export function Chatbot() {
               type="submit"
               disabled={isLoading || !input.trim()}
               className="rounded-full px-6 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            > 
               <Send className="h-4 w-4 mr-2" />
               Send
             </Button>
+            
           </form>
+          <Button
+        variant="ghost"
+        size="icon"
+        className="fixed bottom-4 left-4 md:hidden z-50"
+        onClick={() => window.history.back()}
+      >
+        <ArrowLeftIcon className="h-6 w-6" />
+      </Button>
         </div>
       </Card>
+      
     </div>
   )
 }
