@@ -5,7 +5,7 @@ export const generalInformationData = {
       nearbyLandmarks: ["Pune International Airport", "Kharadi IT Park"],
     },
     establishment: {
-      year: 2005,
+      year: 2009,
       founder: "Late Shri. Rajarambapu Patil",
     },
     accreditation: {

@@ -6,11 +6,10 @@ export default function AIMLDepartment() {
       hodImage="/vs.avif"
       hodName="Mr. Vikramsinh Saste"
       hodQualifications="Ph.D. in Artificial Intelligence"
-      departmentName="AI and Machine Learning"
+      departmentName="Artificial Intelligence and Machine Learning"
       introduction="Welcome to the AI and Machine Learning Department at our institute. We are dedicated to pushing the boundaries of artificial intelligence and machine learning, preparing students for the exciting and rapidly evolving field of AI technology."
       vision="To be at the forefront of AI and ML education and research, driving technological innovations that benefit society."
       mission="To nurture skilled AI and ML professionals through a comprehensive curriculum, hands-on projects, and collaboration with industry leaders."
-      backgroundImage='/robo.jpg'
       features={[
         "Cutting-edge AI and ML laboratories",
         "Collaboration with leading AI research institutes",

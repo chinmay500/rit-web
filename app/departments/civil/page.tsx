@@ -10,7 +10,6 @@ export default function CivilDepartment() {
       introduction="Welcome to the Civil Engineering Department. We are dedicated to educating future civil engineers who will shape the infrastructure of tomorrow."
       vision="To be a premier institution for civil engineering education, fostering sustainable and innovative infrastructure solutions."
       mission="To provide a comprehensive education in civil engineering principles and practices, emphasizing sustainable design and construction methodologies."
-      backgroundImage='/placeholder.svg?height=1080&width=1920'
       features={[
         "Advanced structural and environmental engineering labs",
         "Focus on sustainable and green building technologies",

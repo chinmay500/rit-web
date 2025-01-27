@@ -10,7 +10,6 @@ export default function MechanicalDepartment() {
       introduction="Welcome to the Mechanical Engineering Department. We are committed to providing a comprehensive education in mechanical systems, design, and manufacturing processes."
       vision="To be a leading center for mechanical engineering education and research, fostering innovation and sustainable solutions."
       mission="To educate and train skilled mechanical engineers capable of addressing complex industrial challenges and contributing to technological advancements."
-      backgroundImage='/placeholder.svg?height=1080&width=1920'
       features={[
         "State-of-the-art manufacturing and design labs",
         "Industry-aligned curriculum with focus on practical skills",

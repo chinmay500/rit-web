@@ -10,7 +10,6 @@ export default function ComputerDepartment() {
       introduction="Welcome to the Computer Engineering Department. We are committed to nurturing skilled computer engineers ready to tackle the challenges of the digital age."
       vision="To be a center of excellence in computer engineering education, driving innovation in software development and digital technologies."
       mission="To provide a cutting-edge education in computer engineering, fostering creativity, problem-solving skills, and ethical use of technology."
-      backgroundImage='/placeholder.svg?height=1080&width=1920'
       features={[
         "State-of-the-art computer labs with latest hardware and software",
         "Curriculum focused on emerging technologies like AI, ML, and IoT",
