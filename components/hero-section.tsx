@@ -23,7 +23,7 @@ const HeroSection = () => {
     >
       <motion.div className="absolute inset-0 z-[-2]" style={{ scale, opacity }}>
         <Image
-          src="/clg.jpg"
+          src="/rit.avif"
           alt="College campus background"
           fill
           style={{ objectFit: "cover" }}
@@ -41,7 +41,7 @@ const HeroSection = () => {
           Start your career with a new way of learning
         </motion.h1>
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >

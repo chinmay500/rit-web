@@ -36,12 +36,12 @@ export const academicsData = {
       
     ],
     results: {
-      overallPassPercentage: "92%",
+      overallPassPercentage: "90%",
       departmentWise: {
-        "Mechanical Engineering": "90%",
-        "AI/ML Engineering": "95%",
-        "Civil Engineering": "88%",
-        "Computer Engineering": "94%",
+        "Mechanical Engineering": "86%",
+        "AI/ML Engineering": "91%",
+        "Civil Engineering": "73%",
+        "Computer Engineering": "92%",
       },
     },
   }
