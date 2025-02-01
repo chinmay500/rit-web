@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Roboto } from "next/font/google"
 import { Inter } from 'next/font/google'
 import "./globals.css"
 import { SiteHeader } from "@/components/site-header"
@@ -13,6 +14,11 @@ export const metadata: Metadata = {
     icon: '/fav.ico',
   },
 }
+const roboto = Roboto({
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+})
 
 export default function RootLayout({
   children,
@@ -20,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={roboto.className}>
       <body className={`${inter.className} min-h-screen bg-background antialiased`}>
         <div className="relative flex min-h-screen flex-col">
           <SiteHeader />

@@ -6,14 +6,9 @@ import Image from 'next/image'
 // import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialouge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ChevronDown, Menu, X, MessageCircle } from 'lucide-react'
-import { ContactForm } from '@/app/Contact-form'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ChevronDown, Menu, X, MessageCircle, User } from "lucide-react"
+import { ContactForm } from "@/app/Contact-form"
 
 type NavItemProps = {
   href: string
@@ -107,6 +102,12 @@ export function SiteHeader() {
                 Chat with RITP BOT
               </Button>
             </Link>
+            <Link href="/faculty-signin" passHref>
+            <Button variant="outline" size="sm">
+              <User className="mr-2 h-4 w-4" />
+              Faculty Sign In
+            </Button>
+          </Link>
           </div>
         </nav>
 
@@ -154,6 +155,12 @@ export function SiteHeader() {
                 <Button variant="outline" size="sm">
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Chat with RITP BOT
+                </Button>
+              </Link>
+              <Link href="/faculty-signin" passHref>
+                <Button variant="outline" size="sm" onClick={closeMobileMenu}>
+                  <User className="mr-2 h-4 w-4" />
+                  Faculty Sign In
                 </Button>
               </Link>
             </div>
