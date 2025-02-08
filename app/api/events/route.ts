@@ -1,26 +1,25 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { authOptions } from "../auth/[...nextauth]/auth"
 import prisma from "@/lib/prisma"
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const events = await prisma.event.findMany({
-      orderBy: { date: "desc" },
-      include: {
-        createdBy: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
     })
 
-    return NextResponse.json({ success: true, data: events })
+    return NextResponse.json(events)
   } catch (error) {
     console.error("Error fetching events:", error)
-    return NextResponse.json({ success: false, error: "Failed to fetch events" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 })
   }
 }
 
@@ -34,19 +33,19 @@ export async function POST(req: Request) {
 
     const { title, description, date } = await req.json()
 
-    const event = await prisma.event.create({
+    const newEvent = await prisma.event.create({
       data: {
         title,
         description,
-        date: new Date(date),
+        date,
         userId: session.user.id,
       },
     })
 
-    return NextResponse.json({ success: true, data: event })
+    return NextResponse.json(newEvent, { status: 201 })
   } catch (error) {
     console.error("Error creating event:", error)
-    return NextResponse.json({ success: false, error: "Failed to create event" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create event" }, { status: 500 })
   }
 }
 
