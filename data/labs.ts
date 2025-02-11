@@ -1,61 +1,55 @@
 export const labsData = [
   {
-    name: "Advanced Manufacturing Lab",
-    department: "Mechanical Engineering",
-    equipment: ["CNC Machines", "3D Printers", "Robotics Arm"],
-    description: "State-of-the-art facility for hands-on experience in modern manufacturing techniques.",
-  },
-  {
-    name: "AI Research Lab",
-    department: "Artificial Intelligence and Machine Learning",
-    equipment: ["GPU Clusters", "Deep Learning Workstations", "IoT Devices"],
-    description: "Cutting-edge lab for AI and ML research, equipped with high-performance computing resources.",
-  },
-  {
-    name: "Structural Engineering Lab",
-    department: "Civil Engineering",
-    equipment: ["Material Testing Machines", "Strain Measurement Devices", "Concrete Mixer"],
-    description: "Comprehensive lab for testing and analyzing various construction materials and structures.",
-  },
-  {
-    name: "Network Security Lab",
-    department: "Computer Engineering",
-    equipment: ["Cisco Networking Devices", "Firewall Systems", "Penetration Testing Tools"],
-    description: "Specialized lab for network security training and cybersecurity experiments.",
-  },
-  {
-    name: "Mechanical Engineering Laboratory",
-    department: "Mechanical Engineering",
-    equipment: [
-      "3D Printer",
-      "CAD/CAM Software",
-      "CNC Machines",
-      "Material Testing Equipment",
-      "Fluid Mechanics Apparatus",
-      "Thermodynamics Setup",
+    name: "Computer Center",
+    department: "Computer Science",
+    rooms: [
+      { roomNo: "F-26 A", areaSqM: 77.68, areaSqFt: 836.15 },
+      { roomNo: "F-26 B", areaSqM: 77.68, areaSqFt: 836.15 },
+      { roomNo: "F-25", areaSqM: 77.68, areaSqFt: 836.15 },
     ],
-    description:
-      "State-of-the-art laboratory equipped with modern tools and software for mechanical engineering experiments and projects.",
   },
   {
-    name: "Hyundai Professional Development Centre",
-    department: "Mechanical Engineering",
-    equipment: ["Automotive Training Models", "Engine Test Benches", "Diagnostic Tools"],
-    description:
-      "Specialized center for automotive engineering training in collaboration with Hyundai Motors India Ltd.",
-  },
-  {
-    name: "Workshop",
-    department: "Mechanical Engineering",
-    equipment: [
-      "Lathes",
-      "Milling Machines",
-      "Welding Equipment",
-      "Carpentry Tools",
-      "Fitting Tools",
-      "Plumbing Equipment",
+    name: "Testing Lab",
+    department: "Electronics and Communication",
+    rooms: [
+      { roomNo: "F-24", areaSqM: 110.44, areaSqFt: 1188.78 },
     ],
-    description: "Comprehensive workshop for hands-on training in various mechanical engineering practices.",
   },
-]
-
+  {
+    name: "Hardware Lab",
+    department: "Electronics and Communication",
+    rooms: [
+      { roomNo: "F-17", areaSqM: 54.3, areaSqFt: 584.49 },
+    ],
+  },
+  {
+    name: "IOT Lab",
+    department: "Electronics and Communication",
+    rooms: [
+      { roomNo: "F-19", areaSqM: 82.36, areaSqFt: 886.52 },
+    ],
+  },
+  {
+    name: "Digital Lab",
+    department: "Electronics and Communication",
+    rooms: [
+      { roomNo: "G-20", areaSqM: 110.44, areaSqFt: 1188.78 },
+    ],
+  },
+  {
+    name: "HOD Cabin",
+    department: "Administration",
+    rooms: [
+      { roomNo: "F-21", areaSqM: 54.3, areaSqFt: 584.49 },
+    ],
+  },
+  {
+    name: "Class Room",
+    department: "General",
+    rooms: [
+      { roomNo: "F-11", areaSqM: 82.36, areaSqFt: 886.52 },
+      { roomNo: "F-13", areaSqM: 82.36, areaSqFt: 886.52 },
+      { roomNo: "F-14", areaSqM: 82.36, areaSqFt: 886.52 },
+    ],
+  },
+];
