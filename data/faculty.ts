@@ -18,6 +18,21 @@ export const facultyData = {
         name: "Artificial Intelligence and Machine Learning",
         facultyCount: 12,
         notableAchievements: ["Collaboration with leading AI research labs", "Organizes annual AI symposium"],
+        faculty: [
+          { name: "Mr. Vikramsinha Saste", position: "HOD", qualifications: "B.E. (ENTC)", experience: "-" },
+          { name: "Mr. Mayur Gund", position: "Lecturer", qualifications: "B.E. (COMP)", experience: "-" },
+          { name: "Mrs. Shweta Kohlapkar", position: "Lecturer", qualifications: "B.E.I.T. (Comp)", experience: "-" },
+          { name: "Mrs. Gouri Shewalkar", position: "Lecturer", qualifications: "B.E. (ENTC)", experience: "-" },
+          { name: "Mrs. Snehal Salve", position: "Lecturer", qualifications: "B.E. (Computer)", experience: "-" },
+          // { name: "Miss. Pooja Landge", position: "Lecturer", qualifications: "B.E. (Comp)", experience: "-" },
+          // { name: "Mrs. Komal Lokhande", position: "Lecturer", qualifications: "B.E. (Comp)", experience: "-" },
+          // { name: "Mrs. Vrushali Gaikwad", position: "Lecturer", qualifications: "B.E. (Comp)", experience: "-" },
+          // { name: "Mrs. Meghna Goski", position: "Lecturer", qualifications: "B.E. (E&TC)", experience: "-" },
+          // { name: "Miss. Avishkar Dabre", position: "Lecturer", qualifications: "B.E. (Comp)", experience: "-" },
+          // { name: "Miss. Rutuja Lokhande", position: "Lecturer", qualifications: "B.E. (Comp)", experience: "-" },
+          // { name: "Mr. Prasad Ingle", position: "Lab Assistance", qualifications: "COPA", experience: "-" },
+          // { name: "Mr. Riyaz Mulla", position: "Lab Assistance", qualifications: "ITI", experience: "-" }
+        ],
       },
       {
         name: "Civil Engineering",
