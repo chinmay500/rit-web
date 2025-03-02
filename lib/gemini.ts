@@ -52,8 +52,7 @@ interface AcademicsData {
 interface LabData {
   name: string
   department: string
-  equipment: string[]
-  description: string
+  
 }
 
 interface FacilitiesData {
@@ -225,7 +224,7 @@ export async function generateGeminiResponse(
   }
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
+      model: "gemini-1.5-pro",
       generationConfig: {
         temperature: 0.7,
         topP: 0.8,

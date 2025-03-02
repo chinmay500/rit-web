@@ -23,7 +23,7 @@ const HeroSection = () => {
     >
       <motion.div className="absolute inset-0 z-[-2]" style={{ scale, opacity }}>
         <Image
-          src="/rit.avif"
+          src="/clg.jpg"
           alt="College campus background"
           fill
           style={{ objectFit: "cover" }}

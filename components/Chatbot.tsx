@@ -1,14 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
-// import { Button } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
-// import { ScrollArea } from "@/components/ui/scroll-area"
-// import { Card } from "@/components/ui/card"
-// import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { generateGeminiResponse } from "@/lib/gemini"
-// import { Send, ArrowLeftIcon } from "lucide-react"
-// import { format } from "date-fns"
-// import Image from "next/image"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { DesktopChatbot } from "./desktop-chatbot"
 import { MobileChatbot } from "./mobile-chatbot"
@@ -68,17 +60,7 @@ Example format:
 • Main subjects covered
 → Career prospects
 
-RESPONSE FORMATS:
-[Keep the existing response formats]
-
-LEARNING INSTRUCTIONS:
-[Keep the existing learning instructions]
-
-IMPORTANT INSTRUCTIONS:
-[Keep the existing important instructions]
-
 Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune. Do not provide any code, programming solutions, or technical implementation details, even if asked. Always redirect the conversation back to RITP Lohegaon Pune if it drifts off-topic.`
-
 
 // Message and Option interfaces
 export interface Message {
@@ -142,7 +124,6 @@ export function Chatbot() {
   const [options, setOptions] = useState<Option[]>([])
   const [askedQuestions, setAskedQuestions] = useState<Set<string>>(new Set())
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  // const inputRef = useRef<HTMLInputElement>(null)
   const isMobile = useMediaQuery("(max-width: 640px)")
 
   // Greeting messages
@@ -176,7 +157,7 @@ export function Chatbot() {
         scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
     }
-  }, [messages])
+  }, [])
 
   // Generate follow-up options
   const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
@@ -329,4 +310,3 @@ export function Chatbot() {
     </>
   )
 }
-

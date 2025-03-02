@@ -1,12 +1,14 @@
+import React from "react"
+import { Message, Option } from "./Chatbot"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, ArrowLeftIcon } from "lucide-react"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Send, Loader2, Sparkles } from 'lucide-react'
+import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import Image from "next/image"
-import type { Message, Option } from "./Chatbot"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 
 interface DesktopChatbotProps {
   messages: Message[]
@@ -34,133 +36,128 @@ export function DesktopChatbot({
   scrollAreaRef,
 }: DesktopChatbotProps) {
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <Card className="w-full max-w-[600px] mx-auto flex-grow flex flex-col rounded-t-2xl shadow-lg overflow-hidden bg-white/80 dark:bg-gray-850/80 backdrop-blur-lg">
-        <ScrollArea className="flex-grow px-4 overflow-y-auto pt-8" ref={scrollAreaRef}>
-          <div className="py-4 space-y-6 min-h-full">
+    <Card className="w-full max-w-4xl mx-auto shadow-lg border-primary/10 bg-gradient-to-b from-background to-background/80 backdrop-blur">
+      <CardHeader className="border-b bg-muted/50">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
+            <AvatarImage src="/logo.png" alt="RITP Bot" />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              <BotAvatar />
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              RITP Bot
+              <Badge variant="outline" className="ml-2 bg-primary/10 text-primary text-xs font-normal">
+                <Sparkles className="h-3 w-3 mr-1" />
+                AI Assistant
+              </Badge>
+            </CardTitle>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[500px] p-4" ref={scrollAreaRef}>
+          <div className="flex flex-col gap-4">
             {messages.map((message, index) => (
-              <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                key={index}
+                className={cn("flex", {
+                  "justify-end": message.role === "user",
+                  "justify-start": message.role === "assistant",
+                })}
+              >
                 <div
-                  className={`flex items-start gap-3 max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                  className={cn("flex gap-2 max-w-[80%]", {
+                    "flex-row-reverse": message.role === "user",
+                  })}
                 >
-                  <Avatar className={`h-8 w-8 ${message.role === "user" ? "bg-blue-500" : "bg-green-500"}`}>
-                    <AvatarFallback>{message.role === "user" ? <UserAvatar /> : <BotAvatar />}</AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <div
-                      className={`rounded-2xl px-4 py-2 ${
-                        message.role === "user"
-                          ? "bg-blue-500 text-white rounded-tr-none"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-tl-none"
-                      }`}
+                  <div className="flex-shrink-0 mt-1">
+                    <Avatar
+                      className={cn("h-8 w-8", {
+                        "bg-primary text-primary-foreground": message.role === "assistant",
+                        "bg-muted": message.role === "user",
+                      })}
                     >
-                      {message.role === "assistant" ? (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: message.content.replace(
-                              /\*\*(.*?)\*\*/g,
-                              '<span class="font-bold text-primary">$1</span>',
-                            ),
-                          }}
+                      {message.role === "assistant" ? <BotAvatar /> : <UserAvatar />}
+                    </Avatar>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div
+                      className={cn("rounded-lg p-3", {
+                        "bg-primary text-primary-foreground": message.role === "user",
+                        "bg-muted": message.role === "assistant",
+                      })}
+                    >
+                      <div
+                        className="prose prose-sm dark:prose-invert"
+                        dangerouslySetInnerHTML={{
+                          __html: message.content
+                            .replace(/\*\*(.*?)\*\*/g, '<span class="text-primary font-bold">$1</span>')
+                            .replace(/\n/g, "<br />"),
+                        }}
+                      />
+                      {message.imageUrl && (
+                        <img
+                          src={message.imageUrl || "/placeholder.svg"}
+                          alt="Response image"
+                          className="mt-2 rounded-md max-w-full h-auto"
                         />
-                      ) : (
-                        message.content
                       )}
                     </div>
-                    {message.imageUrl && (
-                      <div className="mt-2">
-                        <Image
-                          src={message.imageUrl || "/placeholder.svg"}
-                          alt="College Image"
-                          width={500}
-                          height={300}
-                          className="rounded-lg"
-                          style={{
-                            objectFit: "cover",
-                            maxWidth: "100%",
-                            height: "auto",
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className={`text-xs text-gray-500 ${message.role === "user" ? "text-right" : "text-left"}`}>
-                      {format(message.timestamp, "h:mm a")}
-                    </div>
+                    <span className="text-xs text-muted-foreground px-2">
+                      {format(new Date(message.timestamp), "h:mm a")}
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
-            {options.length > 0 && (
-              <div className="flex flex-wrap gap-2 justify-center">
-                {options.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOptionClick(option)}
-                    disabled={isLoading}
-                  >
-                    {option.label}
-                  </Button>
-                ))}
-              </div>
-            )}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="flex items-start gap-3 max-w-[80%]">
-                  <Avatar className="h-8 w-8 bg-green-500">
-                    <AvatarFallback>
-                      <BotAvatar />
-                    </AvatarFallback>
+                <div className="flex gap-2 max-w-[80%]">
+                  <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
+                    <BotAvatar />
                   </Avatar>
-                  <div className="rounded-2xl rounded-tl-none px-4 py-2 bg-gray-100 dark:bg-gray-700">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
+                  <div className="flex flex-col gap-1">
+                    <div className="bg-muted rounded-lg p-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
+          {options.length > 0 && !isLoading && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {options.map((option, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                  onClick={() => handleOptionClick(option)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          )}
         </ScrollArea>
-
-        {/* Input Area */}
-        <div className="p-4 border-t bg-white/80 dark:bg-gray-850/80 backdrop-blur-lg">
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="Type your message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isLoading}
-              className="flex-grow rounded-full bg-gray-100 dark:bg-gray-700"
-            />
-            <Button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="rounded-full px-6 bg-blue-500 hover:bg-blue-600 text-white transition-all duration-300"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send
-            </Button>
-          </form>
-        </div>
-      </Card>
-
-      {/* Back Button for PC View */}
-      <div className="fixed bottom-4 left-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => window.history.back()}
-          className="rounded-full bg-white dark:bg-gray-800"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter className="p-4 border-t bg-muted/30">
+        <form onSubmit={handleSubmit} className="flex w-full gap-2">
+          <Input
+            placeholder="Type your message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 bg-background/50 border-muted-foreground/20 focus-visible:ring-primary/50"
+            disabled={isLoading}
+          />
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+        </form>
+      </CardFooter>
+    </Card>
   )
 }
-
