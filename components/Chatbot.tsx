@@ -1,5 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
 import { generateGeminiResponse } from "@/lib/gemini"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { DesktopChatbot } from "./desktop-chatbot"
@@ -17,50 +19,28 @@ import { generalInformationData } from "@/data/generalInformation"
 import { admissionInfoData } from "@/data/admissionInfo"
 import { partnershipsData } from "@/data/partnerships"
 
-// System prompt
-const SYSTEM_PROMPT = `You are RITP BOT, an intelligent and friendly AI assistant for RITP Lohegaon Pune college. Engage users in a natural, conversational manner while providing accurate information. Use a variety of greetings and response styles to seem more human-like. Always maintain a helpful and positive tone.
+// Updated SYSTEM_PROMPT (concise and clear)
+const SYSTEM_PROMPT = `You are RITP BOT, an AI assistant for RITP Lohegaon Pune polytechnic college. Follow these guidelines:
 
-RESPONSE GUIDELINES:
-1. Use natural language and vary your responses to sound more human-like.
-2. Show empathy and enthusiasm in your responses.
-3. Use conversational phrases like "Well," "You know," "Actually," to start sentences occasionally.
-4. Ask follow-up questions to engage the user and gather more context.
-5. If appropriate, share anecdotes or fun facts about college life at RITP.
-6. Use emojis sparingly to convey emotion, but don't overdo it.
-7. ONLY answer questions related to RITP Lohegaon Pune college. If a question is not related to the college, politely inform the user that you can only provide information about RITP Lohegaon Pune.
-8. DO NOT provide any code or answer coding-related questions, even if they seem to be related to courses offered at the college. Instead, explain that you can provide information about the college's computer science or programming courses, but cannot write or explain specific code.
-9. Do not provide any general knowledge questions or any political affair information, even if they seem to be related. Instead, suggest that the user check the latest news on news platforms.
-10. If the user asks about topics outside the scope of RITP Lohegaon Pune, respond with: "I'm here to provide information about RITP Lohegaon Pune. If you have any questions about the college, feel free to ask!"
-11. Do not engage in discussions about other educational institutions, universities, or colleges. Always redirect the conversation back to RITP Lohegaon Pune.
-12. If the user asks for personal advice, opinions, or subjective matters, respond with: "I'm here to provide factual information about RITP Lohegaon Pune. For personal advice, you might want to consult with a counselor or advisor."
-13. Do not provide any financial, legal, or medical advice. If asked, respond with: "I'm not qualified to provide financial, legal, or medical advice. Please consult a professional in that field."
-14. If the user asks about the chatbot's capabilities or how it works, respond with: "I'm an AI assistant designed to provide information about RITP Lohegaon Pune. How can I assist you with college-related questions?"
-15. Do not engage in any form of debate or argument. If the user becomes confrontational, respond with: "I'm here to help with any questions you have about RITP Lohegaon Pune. Let me know how I can assist you!"
-16. STRICTLY DO NOT PROVIDE ANY PROGRAMMING LANGUAGE CODE, EXAMPLES, OR IMPLEMENTATION DETAILS. If the user asks for code, respond with: "I'm here to provide information about RITP Lohegaon Pune. I cannot provide or explain programming code. However, I can tell you about our computer science or programming-related courses if you're interested!"
-17. Do not explain algorithms, data structures, or technical concepts in detail. If asked, respond with: "I can provide information about our computer science curriculum, but I cannot explain technical concepts or algorithms in detail."
-18. Do not assist with debugging, code optimization, or software development. If asked, respond with: "I'm here to provide information about RITP Lohegaon Pune. For coding assistance, you might want to consult with a programming tutor or use online coding resources."
-19. Do not provide examples of code snippets, pseudocode, or programming logic. If asked, respond with: "I cannot provide code examples, but I can share information about our programming courses and how they prepare students for careers in software development."
-20. Do not engage in discussions about specific programming languages (e.g., Python, Java, C++). If asked, respond with: "I can provide information about the programming languages taught in our courses, but I cannot provide code or technical details about them."
+1. **Be Helpful and Accurate**: Provide factual information about RITP Lohegaon Pune.
+2. **Stay On-Topic**: Only answer questions related to the college. For unrelated queries, respond: "I can only provide information about RITP Lohegaon Pune."
+3. **No Code or Technical Details**: Do not provide code, algorithms, or technical implementation details. Redirect to course information if asked.
+4. **Engaging Responses**: Use natural language, emojis sparingly, and conversational phrases.
+5. **Structured Format**: Use bullet points (•), numbered emojis (1️⃣, 2️⃣), and bold text (**) for clarity.
 
-COLLEGE INFORMATION:
-Use the imported data (facultyData, academicsData, labsData, facilitiesData, achievementsData, placementsData, studentAwardsData, generalInformationData, admissionInfoData, partnershipsData) to provide accurate and up-to-date information about the college.
+**College Departments**:
+1. CO - Computer Engineering
+2. AIML - Artificial Intelligence and Machine Learning
+3. Civil - Civil Engineering
+4. Mechanical - Mechanical Engineering
 
-RESPONSE FORMATTING:
-When describing courses or programs:
-1. Use "**" for course names (will be styled as bold and primary color)
-2. Use numbered emojis (1️⃣, 2️⃣, etc.) for list items
-3. Structure responses with clear sections
-4. Add brief descriptions for each course
-5. Include key highlights in separate lines
-6. End each course section with career prospects
+**Response Format**:
+1️⃣ **Section Title:**
+• Key point 1
+• Key point 2
+→ Outcome or result
 
-Example format:
-1️⃣ **Course Name:**
-• Key features and duration
-• Main subjects covered
-→ Career prospects
-
-Remember to be engaging and informative while providing accurate information about RITP Lohegaon Pune. Do not provide any code, programming solutions, or technical implementation details, even if asked. Always redirect the conversation back to RITP Lohegaon Pune if it drifts off-topic.`
+Let me know how I can assist you! 😊`;
 
 // Message and Option interfaces
 export interface Message {
@@ -128,13 +108,9 @@ export function Chatbot() {
 
   // Greeting messages
   const greetings = [
-    "Hi! 👋 I'm RITP BOT, and I'll be your guide to RITP Lohegaon today.",
-    "Hello! Welcome to RITP Lohegaon. I'm your AI assistant, ready to help!",
-    "Greetings! 😊 I'm here to help you learn about RITP Lohegaon. What would you like to know?",
-    "Welcome to RITP Lohegaon! 🎓 I'm your virtual assistant, eager to answer your questions.",
-    "Hey there! Ready to explore RITP Lohegaon? I'm here to guide you through everything you need to know.",
-    "Good day! 🌟 I'm RITP BOT, your personal guide to all things RITP Lohegaon. What can I help you with?",
-    "Hello and welcome to RITP Lohegaon! I'm your AI companion, ready to assist with any inquiries you might have.",
+    "Hi! 👋 I'm RITP BOT, your guide to RITP Lohegaon Pune.",
+    "Hello! Welcome to RITP Lohegaon. How can I assist you today?",
+    "Greetings! 😊 What would you like to know about RITP Lohegaon?",
   ]
 
   // Initial greeting
@@ -143,12 +119,13 @@ export function Chatbot() {
     setMessages([
       {
         role: "assistant",
-        content: `${randomGreeting} Feel free to ask me multiple questions at once - I can handle it!`,
+        content: randomGreeting,
         timestamp: new Date(),
       },
     ])
   }, [])
 
+  // Auto-scroll to the latest message
   useEffect(() => {
     const scrollArea = scrollAreaRef.current
     if (scrollArea) {
@@ -157,13 +134,13 @@ export function Chatbot() {
         scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
     }
-  }, [])
+  }, [messages])
 
   // Generate follow-up options
   const generateOptions = (userInput: string, botResponse: string, askedQuestions: Set<string>): Option[] => {
-    const options: Option[] = []
-    const lowercaseInput = userInput.toLowerCase()
-    const lowercaseResponse = botResponse.toLowerCase()
+    const options: Option[] = [];
+    const lowercaseInput = userInput.toLowerCase();
+    // const lowercaseResponse = botResponse.toLowerCase();
 
     const allOptions = [
       { label: "Course Details", value: "Tell me more about the courses offered" },
@@ -174,46 +151,73 @@ export function Chatbot() {
       { label: "Infrastructure", value: "Describe the college infrastructure" },
       { label: "Scholarships", value: "Are there any scholarships available?" },
       { label: "Extracurricular Activities", value: "What extracurricular activities are offered?" },
-      { label: "Research Opportunities", value: "Are there research opportunities for students?" },
-      { label: "Industry Partnerships", value: "Does the college have any industry partnerships?" },
-    ]
+      { label: "Computer Department", value: "Tell me about the Computer department" },
+      { label: "AIML Department", value: "Tell me about the Artificial Intelligence and Machine Learning department" },
+      { label: "Civil Department", value: "Tell me about the Civil Engineering department" },
+      { label: "Mechanical Department", value: "Tell me about the Mechanical Engineering department" },
+      { label: "College History", value: "What is the history of RITP Lohegaon?" },
+      { label: "Campus Facilities", value: "What facilities are available on campus?" },
+      { label: "Hostel Accommodation", value: "Tell me about hostel facilities" },
+      { label: "Sports Facilities", value: "What sports facilities are available?" },
+    ];
 
     // Filter out already asked questions
-    const availableOptions = allOptions.filter((option) => !askedQuestions.has(option.value))
+    const availableOptions = allOptions.filter((option) => !askedQuestions.has(option.value));
 
-    // Always include at least one related option if available
-    const relatedOption = availableOptions.find(
-      (option) =>
-        lowercaseInput.includes(option.label.toLowerCase()) && !lowercaseResponse.includes(option.label.toLowerCase()),
-    )
+    // Prioritize options based on user input
+    const isDepartmentQuery = lowercaseInput.includes("department") || lowercaseInput.includes("dept");
+    const isCourseQuery = lowercaseInput.includes("course") || lowercaseInput.includes("program");
+    const isCollegeQuery = lowercaseInput.includes("college") || lowercaseInput.includes("rit") || lowercaseInput.includes("ritp");
+    const isAIMLQuery = lowercaseInput.includes("aiml") || lowercaseInput.includes("ai") || lowercaseInput.includes("ml");
 
-    if (relatedOption) {
-      options.push(relatedOption)
+    let priorityOptions: Option[] = [];
+
+    if (isAIMLQuery) {
+      priorityOptions = availableOptions.filter(
+        (option) => option.label.toLowerCase().includes("aiml") || option.value.toLowerCase().includes("artificial intelligence")
+      );
+    } else if (isDepartmentQuery) {
+      priorityOptions = availableOptions.filter(
+        (option) => option.label.toLowerCase().includes("department") || option.value.toLowerCase().includes("department")
+      );
+    } else if (isCourseQuery) {
+      priorityOptions = availableOptions.filter(
+        (option) => option.label.toLowerCase().includes("course") || option.value.toLowerCase().includes("course")
+      );
+    } else if (isCollegeQuery) {
+      priorityOptions = availableOptions.filter(
+        (option) => option.label.toLowerCase().includes("college") || option.value.toLowerCase().includes("college")
+      );
+    }
+
+    // Add up to 2 priority options
+    for (let i = 0; i < Math.min(2, priorityOptions.length); i++) {
+      options.push(priorityOptions[i]);
     }
 
     // Add random options to make up to 3 total options
     while (options.length < 3 && availableOptions.length > options.length) {
-      const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)]
-      if (!options.includes(randomOption)) {
-        options.push(randomOption)
+      const randomOption = availableOptions[Math.floor(Math.random() * availableOptions.length)];
+      if (!options.some((opt) => opt.value === randomOption.value)) {
+        options.push(randomOption);
       }
     }
 
-    return options
-  }
+    return options;
+  };
 
   // Process user input
   const processUserInput = async (userInput: string) => {
-    if (isLoading) return
+    if (isLoading) return;
 
     const userMessage: Message = {
       role: "user",
       content: userInput,
       timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setIsLoading(true)
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
 
     try {
       const response = await generateGeminiResponse(userInput, {
@@ -230,28 +234,22 @@ export function Chatbot() {
           admissionInfoData,
           partnershipsData,
         },
-      })
+      });
 
       if (response) {
-        // Extract image URL from the response (if any)
-        const imageUrlMatch = response.match(/!\[Image\]$$(.*?)$$/)
-        const imageUrl = imageUrlMatch ? imageUrlMatch[1] : undefined
-        const content = response.replace(/!\[Image\]$$.*?$$/, "") // Remove the image URL from the content
-
         const assistantMessage: Message = {
           role: "assistant",
-          content,
+          content: response,
           timestamp: new Date(),
-          imageUrl,
-        }
-        setMessages((prev) => [...prev, assistantMessage])
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
 
         // Generate follow-up options
-        const newOptions = generateOptions(userInput, content, askedQuestions)
-        setOptions(newOptions)
+        const newOptions = generateOptions(userInput, response, askedQuestions);
+        setOptions(newOptions);
       }
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error:", error);
       setMessages((prev) => [
         ...prev,
         {
@@ -259,24 +257,24 @@ export function Chatbot() {
           content: "I'm having trouble processing your request. Please try again later.",
           timestamp: new Date(),
         },
-      ])
+      ]);
     }
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-    processUserInput(input)
-  }
+    e.preventDefault();
+    if (!input.trim()) return;
+    processUserInput(input);
+  };
 
   // Handle option click
   const handleOptionClick = (option: Option) => {
-    setAskedQuestions((prev) => new Set(prev).add(option.value))
-    processUserInput(option.value)
-  }
+    setAskedQuestions((prev) => new Set(prev).add(option.value));
+    processUserInput(option.value);
+  };
 
   return (
     <>
@@ -308,5 +306,5 @@ export function Chatbot() {
         />
       )}
     </>
-  )
+  );
 }

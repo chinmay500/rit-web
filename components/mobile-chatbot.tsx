@@ -10,6 +10,7 @@ import { format } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import Image from "next/image"
 
 interface MobileChatbotProps {
   messages: Message[]
@@ -99,7 +100,7 @@ export function MobileChatbot({
                         }}
                       />
                       {message.imageUrl && (
-                        <img
+                        <Image
                           src={message.imageUrl || "/placeholder.svg"}
                           alt="Response image"
                           className="mt-2 rounded-md max-w-full h-auto"

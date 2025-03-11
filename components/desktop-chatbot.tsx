@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 
 interface DesktopChatbotProps {
   messages: Message[]
@@ -98,7 +99,7 @@ export function DesktopChatbot({
                         }}
                       />
                       {message.imageUrl && (
-                        <img
+                        <Image
                           src={message.imageUrl || "/placeholder.svg"}
                           alt="Response image"
                           className="mt-2 rounded-md max-w-full h-auto"
